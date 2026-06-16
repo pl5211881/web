@@ -541,13 +541,13 @@ function findProductByName(name) {
 }
 
 function productColor(productName, report) {
-  const colors = ["#d9ff42", "#ffffff", "#c3c4c8", "#4f4f4f"];
+  const colors = ["#00BCBC", "#ffffff", "#c3c4c8", "#4f4f4f"];
   const index = Math.max(0, report.rankings.findIndex((item) => item.productName === productName));
   return colors[index % colors.length];
 }
 
 function buildRadarData(report) {
-  const colors = ["#d9ff42", "#ffffff", "#c3c4c8", "#4f4f4f"];
+  const colors = ["#00BCBC", "#ffffff", "#c3c4c8", "#4f4f4f"];
   const dimensions = report.matrix.map((row) => row.dimension);
   const products = report.rankings.map((product, productIndex) => ({
     name: product.productName,

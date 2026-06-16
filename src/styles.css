@@ -3092,3 +3092,180 @@ tbody td,
     break-inside: avoid;
   }
 }
+
+/* Final alignment pass: keep dense B-side controls precise after theme overrides. */
+.capture-head {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.capture-name-row {
+  min-height: 48px;
+  align-items: center;
+}
+
+.capture-dot {
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  margin: 0 8px 0 0;
+}
+
+.name-edit {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: center;
+  padding: 0 6px 0 20px;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.name-display {
+  display: block;
+  min-width: 0;
+  padding-right: 6px;
+  line-height: 1.15;
+}
+
+.name-edit input {
+  inset: 0 50px 0 0;
+  width: calc(100% - 50px);
+  height: 100%;
+  padding: 0 0 0 20px;
+  border-radius: inherit;
+  line-height: 48px;
+}
+
+.name-edit:hover,
+.name-edit:focus-within {
+  padding-left: 20px;
+}
+
+.edit-icon {
+  width: 24px;
+  height: 24px;
+  justify-self: center;
+  align-self: center;
+}
+
+.remove-product-btn {
+  min-height: 44px;
+  align-self: center;
+  border-radius: 14px;
+  padding: 0 16px;
+}
+
+.modal-close,
+.image-preview-close,
+.image-remove {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  text-align: center;
+}
+
+.modal-close {
+  width: 40px;
+  height: 40px;
+  line-height: 1;
+}
+
+.image-preview-close {
+  width: 38px;
+  height: 38px;
+  line-height: 1;
+}
+
+.table-wrap,
+.profile-matrix-scroll {
+  overflow: auto;
+  border-color: rgba(255, 255, 255, 0.14);
+  background: #1b1b1b;
+}
+
+table,
+.profile-matrix {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+thead th,
+thead th:first-child,
+tbody th:first-child,
+.profile-matrix thead th,
+.profile-matrix thead th:first-child,
+.profile-matrix tbody th {
+  background: #1f1f1f;
+  color: #ffffff;
+  text-align: center;
+  vertical-align: middle;
+}
+
+thead th,
+.profile-matrix thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  min-height: 76px;
+  padding: 22px 28px;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.14);
+}
+
+thead th:first-child,
+tbody th:first-child,
+.profile-matrix thead th:first-child,
+.profile-matrix tbody th {
+  width: 220px;
+  min-width: 220px;
+  max-width: 260px;
+  white-space: normal;
+}
+
+thead th:not(:first-child),
+tbody td,
+.profile-matrix thead th:not(:first-child),
+.profile-matrix td {
+  min-width: 420px;
+}
+
+th,
+td,
+.profile-matrix th,
+.profile-matrix td {
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  text-align: center;
+  vertical-align: middle;
+}
+
+th:last-child,
+td:last-child,
+.profile-matrix th:last-child,
+.profile-matrix td:last-child {
+  border-right: 0;
+}
+
+tbody td,
+.profile-matrix td {
+  background: #242424;
+  color: #d9d9d9;
+}
+
+tbody td span,
+.profile-matrix td textarea {
+  display: block;
+  width: 100%;
+  color: #d9d9d9;
+  text-align: center;
+}
+
+.profile-matrix td textarea {
+  min-height: 92px;
+  align-content: center;
+  resize: vertical;
+}
+
+.profile-matrix thead th .role-pill {
+  justify-content: center;
+}
