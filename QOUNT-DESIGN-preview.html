@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Qount Practice Intelligence Preview</title>
+    <meta name="color-scheme" content="light" />
+    <style>
+      :root {
+        --page-bg: #1A1A1A;
+        --page-bg-muted: rgb(27, 27, 27);
+        --surface-bg: #1B1B1B;
+        --surface-bg-muted: rgb(27, 27, 27);
+        --surface-border: #333333;
+        --surface-border-strong: rgb(58, 58, 58);
+        --surface-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 2px rgba(0, 0, 0, 0.04), 0 8px 8px -8px rgba(0, 0, 0, 0.04);
+        --surface-shadow-soft: 0 0 0 1px #333333;
+        --ink: #FFFFFF;
+        --muted: #C3C4C8;
+        --subtle: rgb(131, 131, 131);
+        --accent: #D9FF42;
+        --font-body: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        --font-display: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        --font-mono: SFMono-Regular, ui-monospace, "SFMono-Regular", "SF Mono", Menlo, monospace;
+        --body-size: 18px;
+        --body-line: 22.5px;
+        --body-weight: 400;
+        --label-size: 14px;
+        --label-line: 16px;
+        --label-track: 0.04em;
+        --title-size: 28px;
+        --title-line: 32px;
+        --title-track: -0.03em;
+        --section-size: 28px;
+        --section-line: 32px;
+        --section-track: -0.02em;
+        --source-size: 13px;
+        --source-line: 22.5px;
+        --space-1: 10px;
+        --space-2: 15px;
+        --space-3: 20px;
+        --space-4: 30px;
+        --space-5: 40px;
+        --space-6: 50px;
+        --radius-panel: 10px;
+        --radius-card: 10px;
+        --radius-micro: 6px;
+        --radius-pill: 999px;
+        --button-height: 40px;
+        --button-font-size: 14px;
+        --button-weight: 500;
+        --button-radius: 999px;
+        --secondary-button-radius: 999px;
+        --layout-gap: 30px;
+        --page-padding: 30px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: var(--body-size);
+        font-weight: var(--body-weight);
+        line-height: var(--body-line);
+        background:
+          radial-gradient(circle at top, color-mix(in srgb, var(--accent) 8%, transparent), transparent 30%),
+          linear-gradient(180deg, var(--page-bg) 0%, var(--page-bg-muted) 100%);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-image:
+          linear-gradient(color-mix(in srgb, var(--surface-border) 56%, transparent) 1px, transparent 1px),
+          linear-gradient(90deg, color-mix(in srgb, var(--surface-border) 56%, transparent) 1px, transparent 1px);
+        background-size: 100% calc(60px), calc(60px) 100%;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.3), transparent 88%);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .shell {
+        width: min(1440px, calc(100vw - (var(--page-padding) * 2)));
+        margin: 0 auto;
+        padding: var(--page-padding) 0 calc(var(--page-padding) * 1.2);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(340px, 0.92fr) minmax(420px, 1fr);
+        gap: var(--layout-gap);
+        align-items: start;
+      }
+
+      .stack {
+        display: grid;
+        gap: var(--space-4);
+      }
+
+      .panel {
+        overflow: hidden;
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-panel);
+        background: linear-gradient(180deg, color-mix(in srgb, var(--surface-bg) 88%, white) 0%, var(--surface-bg) 100%);
+        box-shadow: var(--surface-shadow);
+      }
+
+      .panel-inner {
+        padding: var(--space-4);
+      }
+
+      .hero-card {
+        position: relative;
+      }
+
+      .hero-card::before {
+        content: "";
+        position: absolute;
+        left: var(--space-4);
+        right: var(--space-4);
+        top: 0;
+        height: 3px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #1A1A1A 0%, #1B1B1B 33%, #333333 67%, #FFFFFF 100%);
+      }
+
+      .eyebrow {
+        margin-bottom: var(--space-2);
+        color: var(--muted);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        letter-spacing: var(--label-track);
+        text-transform: uppercase;
+      }
+
+      .site-title,
+      .section-title {
+        margin: 0;
+        color: var(--ink);
+        font-family: var(--font-display);
+        font-weight: 600;
+      }
+
+      .site-title {
+        font-size: var(--title-size);
+        line-height: var(--title-line);
+        letter-spacing: var(--title-track);
+      }
+
+      .descriptor {
+        margin: var(--space-2) 0 0;
+        max-width: 42ch;
+        color: var(--muted);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+      }
+
+      .summary {
+        margin: var(--space-3) 0 0;
+        max-width: 56ch;
+        color: var(--muted);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin: var(--space-3) 0 0;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: calc(10px * 3);
+        padding: 0 var(--space-2);
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-pill);
+        background: var(--surface-bg);
+        color: var(--ink);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        box-shadow: var(--surface-shadow-soft);
+      }
+
+      .observed-link {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-top: var(--space-4);
+        padding-top: var(--space-3);
+        border-top: 1px solid var(--surface-border);
+        color: var(--muted);
+        font-size: var(--label-size);
+        overflow-wrap: anywhere;
+      }
+
+      .observed-link::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+      }
+
+      .section-title {
+        font-size: var(--section-size);
+        line-height: var(--section-line);
+        letter-spacing: var(--section-track);
+      }
+
+      .section-subtitle {
+        margin: var(--space-2) 0 var(--space-4);
+        color: var(--muted);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+      }
+
+      .palette-grid,
+      .theme-mode-grid,
+      .type-list,
+      .component-card,
+      .prompt-list,
+      .mini-grid,
+      .token-table {
+        display: grid;
+        gap: var(--space-2);
+      }
+
+      .palette-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-2);
+      }
+
+      .palette-row.neutral-row {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .theme-mode-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-3);
+      }
+
+      .theme-mode-card {
+        display: grid;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-card);
+        background: color-mix(in srgb, var(--surface-bg) 92%, white);
+      }
+
+      .theme-mode-card.is-dark {
+        background: #111111;
+        color: #f4f4f4;
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+
+      .theme-mode-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+      }
+
+      .theme-mode-label {
+        color: var(--subtle);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        letter-spacing: var(--label-track);
+        text-transform: uppercase;
+      }
+
+      .theme-mode-card.is-dark .theme-mode-label {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .theme-mode-note {
+        margin: 0;
+        color: var(--muted);
+        font-size: calc(var(--body-size) - 1px);
+        line-height: calc(var(--body-line) - 4px);
+      }
+
+      .theme-mode-card.is-dark .theme-mode-note {
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      .theme-swatch-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--space-2);
+      }
+
+      .theme-swatch {
+        display: grid;
+        gap: 6px;
+      }
+
+      .theme-swatch-box {
+        height: 72px;
+        border-radius: calc(var(--radius-card) - 4px);
+        border: 1px solid color-mix(in srgb, var(--surface-border-strong) 75%, transparent);
+      }
+
+      .theme-mode-card.is-dark .theme-swatch-box {
+        border-color: rgba(255, 255, 255, 0.14);
+      }
+
+      .theme-swatch-name {
+        color: inherit;
+        font-size: 12px;
+        line-height: 1.3;
+      }
+
+      .theme-swatch-value {
+        color: var(--subtle);
+        font-size: 11px;
+        line-height: 1.3;
+      }
+
+      .theme-mode-card.is-dark .theme-swatch-value {
+        color: rgba(255, 255, 255, 0.62);
+      }
+
+      .swatch {
+        display: grid;
+        gap: var(--space-2);
+      }
+
+      .swatch-box {
+        min-height: calc(10px * 12);
+        border-radius: var(--radius-card);
+        border: 1px solid color-mix(in srgb, var(--surface-border-strong) 75%, transparent);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 4%, transparent);
+      }
+
+      .swatch-label,
+      .token-heading,
+      .prompt-card strong,
+      .card-preview h4 {
+        color: var(--ink);
+        font-family: var(--font-display);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+        font-weight: 600;
+      }
+
+      .swatch-meta,
+      .type-metrics,
+      .mini-label,
+      .copy-state,
+      .file-tab,
+      .ghost-button,
+      .segmented button {
+        color: var(--muted);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+      }
+
+      .type-row {
+        display: grid;
+        grid-template-columns: 72px minmax(0, 1fr) auto;
+        gap: var(--space-2);
+        align-items: baseline;
+        padding: var(--space-2) 0;
+        border-top: 1px solid var(--surface-border);
+      }
+
+      .type-row:first-child,
+      .mini-row:first-child,
+      .token-row:first-child {
+        border-top: 0;
+        padding-top: 0;
+      }
+
+      .type-role {
+        color: var(--muted);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        letter-spacing: var(--label-track);
+        text-transform: uppercase;
+      }
+
+      .type-sample {
+        color: var(--ink);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .split-card {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-4);
+      }
+
+      .token-row,
+      .mini-row {
+        display: grid;
+        gap: var(--space-2);
+        align-items: start;
+        padding-top: var(--space-2);
+        border-top: 1px solid var(--surface-border);
+      }
+
+      .token-row {
+        grid-template-columns: 1fr auto;
+      }
+
+      .mini-row {
+        grid-template-columns: 88px minmax(0, 1fr);
+      }
+
+      .mini-content,
+      .prompt-card p,
+      .card-preview p {
+        color: var(--muted);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+      }
+
+      .radius-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-2);
+      }
+
+      .radius-card,
+      .prompt-card {
+        padding: var(--space-3);
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-card);
+        background: var(--surface-bg-muted);
+        box-shadow: var(--surface-shadow-soft);
+      }
+
+      .radius-demo {
+        aspect-ratio: 1;
+        width: 100%;
+        border: 1px solid var(--surface-border-strong);
+        background: var(--surface-bg);
+      }
+
+      .radius-name {
+        margin-top: var(--space-2);
+        color: var(--ink);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+        font-weight: 600;
+      }
+
+      .radius-value {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: var(--label-size);
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+      }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: var(--button-height);
+        padding: 0 var(--space-3);
+        border-radius: var(--button-radius);
+        font-family: var(--font-body);
+        font-size: var(--button-font-size);
+        font-weight: var(--button-weight);
+        line-height: 1;
+        letter-spacing: normal;
+      }
+
+      .cta-primary {
+        border: 1px solid transparent;
+        background: #171717;
+        color: #ffffff;
+        border-radius: 999px;
+      }
+
+      .cta-secondary {
+        border: 1px solid #171717;
+        background: #ffffff;
+        color: #171717;
+        border-radius: 999px;
+        box-shadow: var(--surface-shadow-soft);
+      }
+
+      .card-preview {
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid color-mix(in srgb, var(--surface-border-strong) 72%, transparent);
+        background: var(--surface-bg);
+        color: var(--ink);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 2px rgba(0, 0, 0, 0.04), 0 8px 8px -8px rgba(0, 0, 0, 0.04);
+      }
+
+      .card-preview h4 {
+        margin: 0 0 var(--space-1);
+      }
+
+      .source-shell {
+        position: sticky;
+        top: var(--page-padding);
+      }
+
+      .source-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+        padding: var(--space-3) var(--space-4) var(--space-2);
+        border-bottom: 1px solid var(--surface-border);
+      }
+
+      .file-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px var(--space-3);
+      }
+
+      .file-tab {
+        padding: 0 0 var(--space-2);
+        border-bottom: 2px solid transparent;
+      }
+
+      .file-tab.active {
+        color: var(--ink);
+        border-bottom-color: var(--ink);
+        font-weight: 600;
+      }
+
+      .source-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-4);
+        border-bottom: 1px solid var(--surface-border);
+      }
+
+      .segmented {
+        display: inline-flex;
+        padding: 3px;
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-pill);
+        background: var(--surface-bg-muted);
+      }
+
+      .segmented button {
+        border: 0;
+        border-radius: var(--radius-pill);
+        background: transparent;
+        padding: 6px 12px;
+        cursor: pointer;
+      }
+
+      .segmented button.is-active {
+        background: var(--surface-bg);
+        color: var(--ink);
+        box-shadow: var(--surface-shadow-soft);
+      }
+
+      .toolbar-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin-left: auto;
+      }
+
+      .ghost-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border: 1px solid var(--surface-border);
+        border-radius: 6px;
+        background: var(--surface-bg);
+        box-shadow: var(--surface-shadow-soft);
+        cursor: pointer;
+      }
+
+      .source-body {
+        max-height: calc(100vh - (var(--page-padding) * 2) - 120px);
+        overflow: auto;
+      }
+
+      .source-view,
+      .rendered-view {
+        margin: 0;
+        padding: var(--space-4);
+      }
+
+      .source-view {
+        color: var(--ink);
+        font-family: var(--font-mono);
+        font-size: var(--source-size);
+        line-height: var(--source-line);
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: var(--surface-bg);
+      }
+
+      .rendered-view {
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+        background: var(--surface-bg);
+      }
+
+      .rendered-view[hidden],
+      .source-view[hidden] {
+        display: none;
+      }
+
+      .rendered-view h2,
+      .rendered-view h3 {
+        margin: var(--space-4) 0 var(--space-2);
+        color: var(--ink);
+        font-family: var(--font-display);
+        font-weight: 600;
+      }
+
+      .rendered-view h2 {
+        font-size: var(--section-size);
+        line-height: var(--section-line);
+        letter-spacing: var(--section-track);
+      }
+
+      .rendered-view h2:first-child {
+        margin-top: 0;
+      }
+
+      .rendered-view h3 {
+        color: var(--muted);
+        font-size: calc(28px - 4px);
+        line-height: calc(32px - 4px);
+      }
+
+      .rendered-view p,
+      .rendered-view li {
+        color: var(--muted);
+      }
+
+      .rendered-view ul,
+      .rendered-view ol {
+        margin: 0 0 var(--space-3) 20px;
+        padding: 0;
+      }
+
+      .rendered-view table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: var(--space-2) 0 var(--space-4);
+      }
+
+      .rendered-view th,
+      .rendered-view td {
+        padding: var(--space-2) var(--space-2);
+        border: 1px solid var(--surface-border);
+        text-align: left;
+        vertical-align: top;
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+      }
+
+      .rendered-view th {
+        color: var(--ink);
+        background: var(--surface-bg-muted);
+      }
+
+      .rendered-view code {
+        padding: 0.14em 0.4em;
+        border-radius: 6px;
+        background: var(--surface-bg-muted);
+        color: var(--ink);
+        font-family: var(--font-mono);
+        font-size: 0.92em;
+      }
+
+      @media (max-width: 1120px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .source-shell {
+          position: relative;
+          top: 0;
+        }
+
+        .source-body {
+          max-height: none;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .shell {
+          width: min(100vw - (15px * 2), 100%);
+          padding-top: 15px;
+        }
+
+        .panel-inner,
+        .source-view,
+        .rendered-view {
+          padding-left: var(--space-3);
+          padding-right: var(--space-3);
+        }
+
+        .palette-row,
+        .palette-row.neutral-row,
+        .theme-mode-grid,
+        .theme-swatch-row,
+        .split-card,
+        .radius-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .type-row,
+        .mini-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <div class="layout">
+        <section class="stack">
+          <article class="panel hero-card">
+            <div class="panel-inner">
+              <div class="eyebrow">Design Preview</div>
+              <h1 class="site-title">Qount Practice Intelligence</h1>
+              <p class="descriptor">Qount uses a high-contrast B2B SaaS language built around practice intelligence, predictive...</p>
+              <div class="chip-row"><span class="chip">Deep charcoal background instead...</span><span class="chip">Electric yellow #D9FF42 as the s...</span><span class="chip">White content panels used as str...</span><span class="chip">Large, direct headlines with Int...</span><span class="chip">Data proof blocks: percentages,...</span><span class="chip">Product modules feel businesslik...</span></div>
+              <p class="summary">Qount uses a high-contrast B2B SaaS language built around practice intelligence, predictive operations, and financial accountability. The page alternates between deep charcoal/black sections and stark white content panels, using electric yellow as a sharp signal for action and intelligence.</p>
+              <a class="observed-link" href="https://qount.io/?ref=land-book.com" target="_blank" rel="noreferrer">https://qount.io/?ref=land-book.com</a>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Palette</h2>
+              <p class="section-subtitle">Roles and neutrals rendered using the extracted design system rather than a separate display theme.</p>
+              <div class="palette-grid"><div class="palette-row"><div class="swatch">
+    <div class="swatch-box" style="background:#1A1A1A;"></div>
+    <div class="swatch-label">Qount charcoal</div>
+    <div class="swatch-meta">
+      <span>#1A1A1A</span>
+      <span>Page background</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#1B1B1B;"></div>
+    <div class="swatch-label">Graphite black</div>
+    <div class="swatch-meta">
+      <span>#1B1B1B / #262626</span>
+      <span>Deep surface</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#333333;"></div>
+    <div class="swatch-label">Utility graphite</div>
+    <div class="swatch-meta">
+      <span>#333333 / #373737</span>
+      <span>Raised dark surface</span>
+    </div>
+  </div></div><div class="palette-row neutral-row"><div class="swatch">
+    <div class="swatch-box" style="background:#FFFFFF;"></div>
+    <div class="swatch-label">Paper white</div>
+    <div class="swatch-meta">
+      <span>#FFFFFF</span>
+      <span>Light surface</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#F2F2F2;"></div>
+    <div class="swatch-label">Cool paper</div>
+    <div class="swatch-meta">
+      <span>#F2F2F2 / #F0F0F0</span>
+      <span>Soft light surface</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#FFFFFF;"></div>
+    <div class="swatch-label">White</div>
+    <div class="swatch-meta">
+      <span>#FFFFFF</span>
+      <span>Primary text on dark</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#000000;"></div>
+    <div class="swatch-label">Ink black</div>
+    <div class="swatch-meta">
+      <span>#000000 / #1A1A1A</span>
+      <span>Primary text on light</span>
+    </div>
+  </div></div></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Theme Modes</h2>
+              <p class="section-subtitle">If the product supports light and dark themes, both modes should stay visible in the exported design system and preview.</p>
+              <div class="prompt-card"><strong>Single mode detected</strong><p>No explicit <code>Theme Modes</code> section was detected in the markdown. If the product supports both light and dark themes, document both so the preview can render them side by side.</p></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Typography</h2>
+              <p class="section-subtitle">The preview shell itself now uses the extracted typography stack, sizes, line heights, and tracking.</p>
+              <div class="type-list"><div class="type-row">
+        <div class="type-role">Hero headline desktop</div>
+        <div
+          class="type-sample"
+          style="font-size:48px; line-height:56px; font-weight:700; letter-spacing:normal; font-family:Inter, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">48px • 700 • 56px</div>
+      </div><div class="type-row">
+        <div class="type-role">Hero headline mobile</div>
+        <div
+          class="type-sample"
+          style="font-size:28px; line-height:32px; font-weight:700; letter-spacing:normal; font-family:Inter, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">28px • 700 • 32px</div>
+      </div><div class="type-row">
+        <div class="type-role">Section heading</div>
+        <div
+          class="type-sample"
+          style="font-size:40px; line-height:40px; font-weight:700; letter-spacing:normal; font-family:Inter, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">40px-48px • 700 • 1.1-1.2</div>
+      </div><div class="type-row">
+        <div class="type-role">Small heading</div>
+        <div
+          class="type-sample"
+          style="font-size:18px; line-height:18px; font-weight:700; letter-spacing:normal; font-family:Inter, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">18px-24px • 700 • normal-1.25</div>
+      </div><div class="type-row">
+        <div class="type-role">Body</div>
+        <div
+          class="type-sample"
+          style="font-size:18px; line-height:22.5px; font-weight:400; letter-spacing:normal; font-family:Inter, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">18px • 400 • 22.5px</div>
+      </div><div class="type-row">
+        <div class="type-role">Caption / Label</div>
+        <div
+          class="type-sample"
+          style="font-size:14px; line-height:14px; font-weight:500; letter-spacing:normal; font-family:Inter, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">14px-16px • 500-700 • 1.4</div>
+      </div><div class="type-row">
+        <div class="type-role">Metric</div>
+        <div
+          class="type-sample"
+          style="font-size:40px; line-height:40px; font-weight:700; letter-spacing:normal; font-family:Inter, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">40px-64px • 700 • 1</div>
+      </div></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Spacing &amp; Shape</h2>
+              <p class="section-subtitle">Spacing, panel padding, and radius tokens are mapped directly from the layout rules in the markdown.</p>
+              <div class="split-card">
+    <div>
+      <h3 class="token-heading">Spacing</h3>
+      <div class="token-table"><div class="token-row">
+        <span>Base unit</span>
+        <span>10px</span>
+      </div><div class="token-row">
+        <span>Step 2</span>
+        <span>15px</span>
+      </div><div class="token-row">
+        <span>Step 3</span>
+        <span>20px</span>
+      </div><div class="token-row">
+        <span>Step 4</span>
+        <span>30px</span>
+      </div><div class="token-row">
+        <span>Step 5</span>
+        <span>40px</span>
+      </div></div>
+    </div>
+    <div>
+      <h3 class="token-heading">Border Radius</h3>
+      <div class="radius-grid"><div class="radius-card">
+        <div class="radius-demo" style="border-radius:6px;"></div>
+        <div class="radius-name">Micro utility</div>
+        <div class="radius-value">6px</div>
+      </div><div class="radius-card">
+        <div class="radius-demo" style="border-radius:10px;"></div>
+        <div class="radius-name">Standard module</div>
+        <div class="radius-value">10px</div>
+      </div><div class="radius-card">
+        <div class="radius-demo" style="border-radius:999px;"></div>
+        <div class="radius-name">Category rail</div>
+        <div class="radius-value">999px</div>
+      </div><div class="radius-card">
+        <div class="radius-demo" style="border-radius:999px;"></div>
+        <div class="radius-name">CTA pill</div>
+        <div class="radius-value">999px</div>
+      </div></div>
+    </div>
+  </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Components</h2>
+              <p class="section-subtitle">Buttons and cards use the documented height, weight, radius, colors, and surface treatment.</p>
+              <div class="component-card">
+    <div class="button-row">
+      <span class="cta cta-primary">Start Deploying</span>
+      <span class="cta cta-secondary">Get a Demo</span>
+    </div>
+    <div class="card-preview">
+      <h4>System Card Preview</h4>
+      <p>mix dark graphite cards and high-contrast white panels.</p>
+    </div>
+  </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">System Notes</h2>
+              <p class="section-subtitle">Responsive behavior and depth rules stay visible while keeping the overall proportions calm and readable.</p>
+              <div class="split-card">
+    <div>
+      <h3 class="token-heading">Breakpoints</h3>
+      <div class="mini-grid"><div class="mini-row">
+            <div class="mini-label">Mobile</div>
+            <div class="mini-content"><strong>390px observed</strong><br />Hero headline becomes 28px / 32px; side padding compresses to about 20px; nav becomes minimal.</div>
+          </div><div class="mini-row">
+            <div class="mini-label">Tablet</div>
+            <div class="mini-content"><strong>&lt;= 768px</strong><br />Multi-column proof/cards should stack, CTAs become easier touch targets.</div>
+          </div><div class="mini-row">
+            <div class="mini-label">Desktop</div>
+            <div class="mini-content"><strong>1280px observed</strong><br />Hero headline is 48px / 56px; fixed header spans the viewport; container uses 60px side margin.</div>
+          </div><div class="mini-row">
+            <div class="mini-label">Wide</div>
+            <div class="mini-content"><strong>1440px max</strong><br />Full 12-column grid and generous content spacing.</div>
+          </div></div>
+    </div>
+    <div>
+      <h3 class="token-heading">Elevation</h3>
+      <div class="mini-grid"><div class="mini-row">
+            <div class="mini-label">Flat dark</div>
+            <div class="mini-content"><strong>#1A1A1A, no shadow</strong><br />Page canvas and dark bands.</div>
+          </div><div class="mini-row">
+            <div class="mini-label">Dark card</div>
+            <div class="mini-content"><strong>#262626 with graphite border</strong><br />App cards, upload zones, side panels.</div>
+          </div><div class="mini-row">
+            <div class="mini-label">Light panel</div>
+            <div class="mini-content"><strong>#FFFFFF with black text</strong><br />Important contrast panels and report blocks.</div>
+          </div><div class="mini-row">
+            <div class="mini-label">Accent</div>
+            <div class="mini-content"><strong>#D9FF42 fill or outline</strong><br />Primary action, selected state, intelligence signal.</div>
+          </div></div>
+    </div>
+  </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Prompt Guide</h2>
+              <p class="section-subtitle">Prompt snippets are shown in the same typography and spacing language as the extracted design system.</p>
+              <div class="prompt-list"><div class="prompt-card"><strong>Quick Summary</strong><p>Build a dark-first accounting intelligence interface inspired by Qount. Use a charcoal #1A1A1A canvas, bold white Inter headlines, high-contrast white panels, and electric yellow #D9FF42 for primary actions and selected states. Make the UI feel operational and data-led with metrics, strong grids, and direct business copy. Avoid purple/blue gradients, overly soft cards, and playful decoration.</p></div><div class="prompt-card">
+            <strong>Hero</strong>
+            <p>Create a charcoal hero with a bold 48px white headline, operational paragraph copy, a yellow primary CTA, a white secondary CTA, and product proof bullets.</p>
+          </div><div class="prompt-card">
+            <strong>Card</strong>
+            <p>Create a graphite card with a subtle border, compact data label, large metric, and yellow action marker.</p>
+          </div><div class="prompt-card">
+            <strong>Navigation</strong>
+            <p>Create a fixed dark header with white text links and high-contrast right-side CTAs.</p>
+          </div><div class="prompt-card">
+            <strong>Button or badge</strong>
+            <p>Create a firm rectangular yellow button with black text, 10px-14px radius, and a crisp hover border.</p>
+          </div><div class="prompt-card"><strong>Ready-to-Use Prompt</strong><p>Use the Qount design language: dark charcoal canvas, Inter typography, bold white business headlines, alternating white information panels, electric yellow #D9FF42 action states, visible metrics, and a disciplined 12-column grid. Keep the experience serious, operational, and accounting-tech focused while preserving all existing product functionality.</p></div></div>
+              <div class="split-card" style="margin-top:var(--space-4);">
+    <div>
+      <h3 class="token-heading">Do</h3>
+      <div class="mini-grid"><div class="mini-row"><div class="mini-label">Do</div><div class="mini-content">Use a grayscale-first system with a single strong yellow accent.</div></div><div class="mini-row"><div class="mini-label">Do</div><div class="mini-content">Make CTAs obvious and businesslike.</div></div><div class="mini-row"><div class="mini-label">Do</div><div class="mini-content">Use metrics and compact proof blocks as visual anchors.</div></div><div class="mini-row"><div class="mini-label">Do</div><div class="mini-content">Alternate dark and white panels to create rhythm.</div></div></div>
+    </div>
+    <div>
+      <h3 class="token-heading">Don't</h3>
+      <div class="mini-grid"><div class="mini-row"><div class="mini-label">Don't</div><div class="mini-content">Do not use blue/purple gradients as the main accent.</div></div><div class="mini-row"><div class="mini-label">Don't</div><div class="mini-content">Do not make everything pill-shaped.</div></div><div class="mini-row"><div class="mini-label">Don't</div><div class="mini-content">Do not use soft pastel SaaS styling.</div></div><div class="mini-row"><div class="mini-label">Don't</div><div class="mini-content">Do not hide important actions in low-contrast ghost buttons.</div></div></div>
+    </div>
+  </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="source-shell">
+          <article class="panel">
+            <div class="source-header">
+              <div class="file-tabs">
+                <span class="file-tab">design-system.md</span>
+                <span class="file-tab active">QOUNT-DESIGN.md</span>
+                <span class="file-tab">Design JSON</span>
+                <span class="file-tab">CSS Variables</span>
+                <span class="file-tab">Design Tokens</span>
+              </div>
+            </div>
+            <div class="source-toolbar">
+              <div class="segmented" role="tablist" aria-label="View Switcher">
+                <button class="is-active" data-view="source" type="button">Source</button>
+                <button data-view="preview" type="button">Preview</button>
+              </div>
+              <div class="toolbar-actions">
+                <button class="ghost-button" id="copyButton" type="button">Copy</button>
+                <a class="ghost-button" href="QOUNT-DESIGN.md" download>Open .md</a>
+                <span class="copy-state" id="copyState"></span>
+              </div>
+            </div>
+            <div class="source-body">
+              <pre class="source-view" id="sourceView"># Design System: Qount Practice Intelligence
+
+Source: https://qount.io/?ref=land-book.com
+
+This document distills the observed Qount homepage into a reusable design system. It is not a pixel clone. Use it to reproduce the same accounting-practice intelligence feeling: dark operational confidence, bold white typography, electric yellow action accents, and data-led product storytelling.
+
+## 1. Visual Theme &amp; Atmosphere
+
+Qount uses a high-contrast B2B SaaS language built around practice intelligence, predictive operations, and financial accountability. The page alternates between deep charcoal/black sections and stark white content panels, using electric yellow as a sharp signal for action and intelligence.
+
+- Overall feeling: confident, operational, data-rich, direct, modern accounting-tech.
+- Visual density: medium-high; long narrative page with statistics, tabbed panels, case studies, integration logos, and product modules.
+- Brand posture: firm operations platform that turns fragmented practice data into predictive intelligence.
+- Signature motifs: black canvas, white panels, neon-yellow action color, large percentage metrics, fixed navigation, canvas/diagram visuals, clear section statements.
+
+### Key Characteristics
+
+- Deep charcoal background instead of pure black, commonly `#1A1A1A`.
+- Electric yellow `#D9FF42` as the signature brand accent and CTA color.
+- White content panels used as strong contrast moments inside the dark page.
+- Large, direct headlines with Inter and little typographic ornament.
+- Data proof blocks: percentages, revenue lift, realization, utilization, margin recovery.
+- Product modules feel businesslike and practical, not decorative or playful.
+
+## 2. Color Palette &amp; Roles
+
+| Role | Semantic Name | Value | Usage |
+| --- | --- | --- | --- |
+| Page background | Qount charcoal | `#1A1A1A` | Main page background and dark sections. |
+| Deep surface | Graphite black | `#1B1B1B` / `#262626` | Dark cards, side panels, header backdrop. |
+| Raised dark surface | Utility graphite | `#333333` / `#373737` | Secondary panel separation and controls. |
+| Light surface | Paper white | `#FFFFFF` | Contrast panels, intelligence tabs, modal surfaces. |
+| Soft light surface | Cool paper | `#F2F2F2` / `#F0F0F0` | Inset cards, inputs, quiet backgrounds. |
+| Primary text on dark | White | `#FFFFFF` | Main headings and navigation on dark. |
+| Primary text on light | Ink black | `#000000` / `#1A1A1A` | Text inside white panels. |
+| Secondary text | Gray 400 | `#C3C4C8` | Supporting copy, labels, footer text. |
+| Muted text | Mid gray | `#4F4F4F` | Secondary copy on light surfaces. |
+| Primary action | Intelligence yellow | `#D9FF42` | Main CTAs, badges, active indicators, data accent. |
+| Border on dark | Graphite line | `#333333` / `rgba(255,255,255,0.14)` | Dark card boundaries and table lines. |
+| Border on light | Soft gray line | `#E0E0E0` | White panels, form fields, content cards. |
+
+### Primary
+
+- Use `#1A1A1A` as the default canvas.
+- Use `#D9FF42` sparingly but decisively for action, status, intelligence, or selected states.
+- Use white panels to create strong information zones rather than many low-contrast dark cards.
+
+### Interactive
+
+- Primary CTAs should feel high-contrast: yellow fill with black text, or white fill with black text on dark backgrounds.
+- Secondary links can be outlined or text-only, but should still feel crisp and businesslike.
+- Hover states should sharpen contrast: yellow becomes brighter, dark borders become clearer, white cards lift subtly.
+
+### Neutral Scale
+
+- Dark scale: `#1A1A1A`, `#1B1B1B`, `#262626`, `#333333`, `#373737`, `#4F4F4F`.
+- Light scale: `#FFFFFF`, `#F2F2F2`, `#F0F0F0`, `#E0E0E0`, `#C3C4C8`.
+- The palette is deliberately grayscale with one acidic yellow accent.
+
+### Surface &amp; Overlay
+
+- Dark sections should be flat and substantial, not glassy.
+- White panels should be clean, direct, and structured.
+- Overlays can use dark translucent black with a strong white or yellow foreground.
+
+### Theme Modes
+
+No explicit theme switch was observed. The site itself is dark-first with embedded light panels.
+
+#### Light Mode
+
+- Background: `#FFFFFF` or `#F2F2F2`.
+- Surface: `#FFFFFF`.
+- Text: `#1A1A1A`.
+- Accent: `#D9FF42`.
+- Notes: inferred adaptation for product surfaces; not a user-facing homepage mode.
+
+#### Dark Mode
+
+- Background: `#1A1A1A`.
+- Surface: `#1B1B1B`, `#262626`, `#333333`.
+- Text: `#FFFFFF`, `#C3C4C8`.
+- Accent: `#D9FF42`.
+- Notes: observed default page language.
+
+### Shadows &amp; Depth
+
+- Prefer contrast blocks and borders over soft shadow-heavy SaaS cards.
+- Use subtle dark shadows only to separate floating header, dialogs, or active cards.
+- White panels may use almost no shadow because contrast against dark canvas already creates depth.
+
+## 3. Typography Rules
+
+### Font Family
+
+- Primary: `&quot;qount.io--Inter&quot;, Inter, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, sans-serif`.
+- Monospace: `SFMono-Regular, monospace` for data labels or system readouts if needed.
+- OpenType Features: keep typography plain and functional; do not over-style accounting/product copy.
+
+### Hierarchy
+
+| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| Hero headline desktop | Inter | `48px` | `700` | `56px` | `0` | Direct business outcome headline. |
+| Hero headline mobile | Inter | `28px` | `700` | `32px` | `0` | Compact but still authoritative. |
+| Section heading | Inter | `40px-48px` | `700` | `1.1-1.2` | `0` | Used for big practice-intelligence statements. |
+| Small heading | Inter | `18px-24px` | `700` | `normal-1.25` | `0` | Partner headings, card titles, tab panels. |
+| Body | Inter | `18px` | `400` | `22.5px` | `0` | Observed body baseline; use slightly looser line-height in dense app UI. |
+| Caption / Label | Inter | `14px-16px` | `500-700` | `1.4` | `0` | Metadata, section tags, nav labels. |
+| Metric | Inter | `40px-64px` | `700` | `1` | `0` | Percentages, revenue values, major proof points. |
+
+### Principles
+
+- Headlines are plain, bold, and outcome-oriented.
+- Avoid tight negative tracking; Qount typography is more straightforward than editorial.
+- Use metric type as a visual anchor.
+- Body copy can be direct and explanatory; it should sound operational, not poetic.
+
+## 4. Component Stylings
+
+### Buttons and Links
+
+- Primary CTA: yellow `#D9FF42` fill, black text, firm rectangular or lightly rounded shape.
+- Secondary CTA: white fill with black text on dark backgrounds, or dark outline on light panels.
+- Text links: white on dark or black on light; underline is not dominant.
+- Hover and active feel: sharpen border, brighten yellow, small upward movement is acceptable but keep it restrained.
+
+### Cards and Containers
+
+- Surface style: mix dark graphite cards and high-contrast white panels.
+- Radius: many observed nav/menu surfaces use `10px-20px`; content panels can be `16px-24px`.
+- Border: graphite lines on dark, soft gray lines on light.
+- Shadow or elevation: low; rely on contrast and spacing.
+- Internal spacing: generous, usually `20px-40px` for content cards and panels.
+
+### Inputs and Interactive Controls
+
+- Input treatment: white or graphite field with clear border.
+- Focus behavior: yellow outline or dark border plus subtle glow.
+- Selection states: selected tab or checkbox should use yellow fill/marker with black text.
+
+### Navigation
+
+- Structure: fixed top header, desktop nav centered with right-side CTAs.
+- Background treatment: transparent over dark hero but visually anchored.
+- Link style: white, simple, unadorned; CTAs are stronger than nav links.
+- Sticky or scroll behavior: fixed header remains available while scrolling long content.
+
+### Image Treatment
+
+- Screenshot treatment: product imagery and canvas diagrams are integrated into large sections.
+- Photography or video: customer story cards include video/image proof, paired with metrics and quotes.
+- Border and radius treatment: medium radius for rich media cards; avoid overly rounded toy-like corners.
+
+### Distinctive Components
+
+- Metric cards: large percentages like `8-12%`, `3-7%`, `5-10%`, `$150K-$500K`.
+- Intelligence tabs: Operational, Client, Performance Intelligence with active panel.
+- Comparison blocks: traditional practice management versus Qount practice management.
+- Integration logo fields: tool ecosystem proof, spaced and orderly.
+- CTA narrative block: &quot;One Platform. Total Visibility.&quot; leading into demo action.
+
+## 5. Layout Principles
+
+### Spacing System
+
+- Base unit: `10px` and `20px` are strongly reflected in observed grid variables.
+- Repeated spacing values: `20px`, `40px`, `60px`, `70px`, `84px`, `134px`.
+- Use larger vertical rhythm for long homepage-like flows.
+
+### Grid &amp; Container
+
+- Grid logic: 12-column grid with `20px` gaps.
+- Max content width: `1440px`.
+- Container side offset: `60px` on desktop; about `20px` on mobile.
+- Section spacing: large vertical sections, often with full-width bands.
+
+### Whitespace Philosophy
+
+- Use confident open space around major claims.
+- Balance dense proof content with large statement sections.
+- Keep dashboards and product modules structured rather than floating loosely.
+
+### Border Radius Scale
+
+- Micro: `6px-8px` for tags and small controls.
+- Standard: `10px-12px` for dropdown/menu items and fields.
+- Large: `16px-24px` for cards and major media panels.
+- Pill: use sparingly; Qount feels less pill-heavy than Linear.
+
+## 6. Depth &amp; Elevation
+
+| Level | Treatment | Use |
+| --- | --- | --- |
+| Flat dark | `#1A1A1A`, no shadow | Page canvas and dark bands. |
+| Dark card | `#262626` with graphite border | App cards, upload zones, side panels. |
+| Light panel | `#FFFFFF` with black text | Important contrast panels and report blocks. |
+| Accent | `#D9FF42` fill or outline | Primary action, selected state, intelligence signal. |
+| Overlay | `rgba(0,0,0,0.72)` | Modals and image previews. |
+
+### Depth Principles
+
+- Depth comes from high contrast bands and alternating dark/light surfaces.
+- Do not blur or glass the core interface.
+- Keep shadows utilitarian and mostly reserved for modals, fixed navigation, and raised cards.
+- Use yellow as information priority, not decoration.
+
+## 7. Do&#39;s and Don&#39;ts
+
+### Do
+
+- Use a grayscale-first system with a single strong yellow accent.
+- Make CTAs obvious and businesslike.
+- Use metrics and compact proof blocks as visual anchors.
+- Alternate dark and white panels to create rhythm.
+- Keep copy direct: risk, margin, utilization, visibility, intelligence.
+- Use strong rectangular composition and grid discipline.
+
+### Don&#39;t
+
+- Do not use blue/purple gradients as the main accent.
+- Do not make everything pill-shaped.
+- Do not use soft pastel SaaS styling.
+- Do not hide important actions in low-contrast ghost buttons.
+- Do not overuse decorative shadows or abstract blobs.
+- Do not make the page feel playful; it should feel accountable and operational.
+
+## 8. Responsive Behavior
+
+### Breakpoints
+
+| Name | Width | Key Changes |
+| --- | --- | --- |
+| Mobile | `390px observed` | Hero headline becomes `28px / 32px`; side padding compresses to about `20px`; nav becomes minimal. |
+| Tablet | `&lt;= 768px` | Multi-column proof/cards should stack, CTAs become easier touch targets. |
+| Desktop | `1280px observed` | Hero headline is `48px / 56px`; fixed header spans the viewport; container uses `60px` side margin. |
+| Wide | `1440px max` | Full 12-column grid and generous content spacing. |
+
+### Touch Targets
+
+- CTAs should be at least `40px` high.
+- Avoid tiny adjacent links in dense financial workflows.
+- Keep checkbox/tile selections clearly visible with yellow selected states.
+
+### Collapsing Strategy
+
+- Desktop behavior: fixed header, large two-column hero, long proof sections, tabbed panels.
+- Tablet behavior: stack columns but preserve alternating dark/light section rhythm.
+- Mobile behavior: reduce headline scale, use one-column cards, keep main CTA prominent.
+- Breakpoint-driven component changes: `48px` hero to `28px`, `60px` margin to `20px`.
+- Touch target and spacing adjustments: increase control height and reduce dense side-by-side actions.
+
+## 9. Agent Prompt Guide
+
+### Quick Color Reference
+
+- Primary CTA: `#D9FF42` with `#1A1A1A` text.
+- Background: `#1A1A1A`.
+- Heading text: `#FFFFFF` on dark, `#1A1A1A` on light.
+- Body text: `#C3C4C8` on dark, `#4F4F4F` on light.
+- Border or ring: `#333333` on dark, `#E0E0E0` on light.
+- Accent: `#D9FF42`.
+
+### Quick Summary
+
+Build a dark-first accounting intelligence interface inspired by Qount. Use a charcoal `#1A1A1A` canvas, bold white Inter headlines, high-contrast white panels, and electric yellow `#D9FF42` for primary actions and selected states. Make the UI feel operational and data-led with metrics, strong grids, and direct business copy. Avoid purple/blue gradients, overly soft cards, and playful decoration.
+
+### Example Component Prompts
+
+- Hero: Create a charcoal hero with a bold `48px` white headline, operational paragraph copy, a yellow primary CTA, a white secondary CTA, and product proof bullets.
+- Card: Create a graphite card with a subtle border, compact data label, large metric, and yellow action marker.
+- Navigation: Create a fixed dark header with white text links and high-contrast right-side CTAs.
+- Button or badge: Create a firm rectangular yellow button with black text, `10px-14px` radius, and a crisp hover border.
+
+### Ready-to-Use Prompt
+
+Use the Qount design language: dark charcoal canvas, Inter typography, bold white business headlines, alternating white information panels, electric yellow `#D9FF42` action states, visible metrics, and a disciplined 12-column grid. Keep the experience serious, operational, and accounting-tech focused while preserving all existing product functionality.
+
+### Iteration Guide
+
+1. Replace blue/purple accents with yellow and grayscale contrast.
+2. Strengthen CTAs and selected states so actions are obvious.
+3. Use white panels only for high-value contrast sections, not every card.
+4. Add metric-like emphasis where the content needs hierarchy.
+
+## Optional Appendix: Interaction Patterns
+
+- Scroll: long page with fixed header and large narrative sections.
+- Tabs: intelligence panel uses selected tabs to switch operational/client/performance stories.
+- Hover: CTAs and links sharpen through contrast rather than elaborate motion.
+- Motion: subtle in-view reveals and canvas visuals; businesslike, not playful.
+- Content voice: direct, outcome-focused, emphasizing risk, margin, billing, capacity, visibility, and practice intelligence.
+</pre>
+              <article class="rendered-view" id="previewView" hidden><section><h2>1. Visual Theme &amp; Atmosphere</h2><p>Qount uses a high-contrast B2B SaaS language built around practice intelligence, predictive operations, and financial accountability. The page alternates between deep charcoal/black sections and stark white content panels, using electric yellow as a sharp signal for action and intelligence.</p><ul><li>Overall feeling: confident, operational, data-rich, direct, modern accounting-tech.</li><li>Visual density: medium-high; long narrative page with statistics, tabbed panels, case studies, integration logos, and product modules.</li><li>Brand posture: firm operations platform that turns fragmented practice data into predictive intelligence.</li><li>Signature motifs: black canvas, white panels, neon-yellow action color, large percentage metrics, fixed navigation, canvas/diagram visuals, clear section statements.</li></ul><h3>Key Characteristics</h3><ul><li>Deep charcoal background instead of pure black, commonly <code>#1A1A1A</code>.</li><li>Electric yellow <code>#D9FF42</code> as the signature brand accent and CTA color.</li><li>White content panels used as strong contrast moments inside the dark page.</li><li>Large, direct headlines with Inter and little typographic ornament.</li><li>Data proof blocks: percentages, revenue lift, realization, utilization, margin recovery.</li><li>Product modules feel businesslike and practical, not decorative or playful.</li></ul></section><section><h2>2. Color Palette &amp; Roles</h2><table><thead><tr><th>Role</th><th>Semantic Name</th><th>Value</th><th>Usage</th></tr></thead><tbody><tr><td>Page background</td><td>Qount charcoal</td><td><code>#1A1A1A</code></td><td>Main page background and dark sections.</td></tr><tr><td>Deep surface</td><td>Graphite black</td><td><code>#1B1B1B</code> / <code>#262626</code></td><td>Dark cards, side panels, header backdrop.</td></tr><tr><td>Raised dark surface</td><td>Utility graphite</td><td><code>#333333</code> / <code>#373737</code></td><td>Secondary panel separation and controls.</td></tr><tr><td>Light surface</td><td>Paper white</td><td><code>#FFFFFF</code></td><td>Contrast panels, intelligence tabs, modal surfaces.</td></tr><tr><td>Soft light surface</td><td>Cool paper</td><td><code>#F2F2F2</code> / <code>#F0F0F0</code></td><td>Inset cards, inputs, quiet backgrounds.</td></tr><tr><td>Primary text on dark</td><td>White</td><td><code>#FFFFFF</code></td><td>Main headings and navigation on dark.</td></tr><tr><td>Primary text on light</td><td>Ink black</td><td><code>#000000</code> / <code>#1A1A1A</code></td><td>Text inside white panels.</td></tr><tr><td>Secondary text</td><td>Gray 400</td><td><code>#C3C4C8</code></td><td>Supporting copy, labels, footer text.</td></tr><tr><td>Muted text</td><td>Mid gray</td><td><code>#4F4F4F</code></td><td>Secondary copy on light surfaces.</td></tr><tr><td>Primary action</td><td>Intelligence yellow</td><td><code>#D9FF42</code></td><td>Main CTAs, badges, active indicators, data accent.</td></tr><tr><td>Border on dark</td><td>Graphite line</td><td><code>#333333</code> / <code>rgba(255,255,255,0.14)</code></td><td>Dark card boundaries and table lines.</td></tr><tr><td>Border on light</td><td>Soft gray line</td><td><code>#E0E0E0</code></td><td>White panels, form fields, content cards.</td></tr></tbody></table><h3>Primary</h3><ul><li>Use <code>#1A1A1A</code> as the default canvas.</li><li>Use <code>#D9FF42</code> sparingly but decisively for action, status, intelligence, or selected states.</li><li>Use white panels to create strong information zones rather than many low-contrast dark cards.</li></ul><h3>Interactive</h3><ul><li>Primary CTAs should feel high-contrast: yellow fill with black text, or white fill with black text on dark backgrounds.</li><li>Secondary links can be outlined or text-only, but should still feel crisp and businesslike.</li><li>Hover states should sharpen contrast: yellow becomes brighter, dark borders become clearer, white cards lift subtly.</li></ul><h3>Neutral Scale</h3><ul><li>Dark scale: <code>#1A1A1A</code>, <code>#1B1B1B</code>, <code>#262626</code>, <code>#333333</code>, <code>#373737</code>, <code>#4F4F4F</code>.</li><li>Light scale: <code>#FFFFFF</code>, <code>#F2F2F2</code>, <code>#F0F0F0</code>, <code>#E0E0E0</code>, <code>#C3C4C8</code>.</li><li>The palette is deliberately grayscale with one acidic yellow accent.</li></ul><h3>Surface &amp; Overlay</h3><ul><li>Dark sections should be flat and substantial, not glassy.</li><li>White panels should be clean, direct, and structured.</li><li>Overlays can use dark translucent black with a strong white or yellow foreground.</li></ul><h3>Theme Modes</h3><p>No explicit theme switch was observed. The site itself is dark-first with embedded light panels.</p><p>#### Light Mode</p><ul><li>Background: <code>#FFFFFF</code> or <code>#F2F2F2</code>.</li><li>Surface: <code>#FFFFFF</code>.</li><li>Text: <code>#1A1A1A</code>.</li><li>Accent: <code>#D9FF42</code>.</li><li>Notes: inferred adaptation for product surfaces; not a user-facing homepage mode.</li></ul><p>#### Dark Mode</p><ul><li>Background: <code>#1A1A1A</code>.</li><li>Surface: <code>#1B1B1B</code>, <code>#262626</code>, <code>#333333</code>.</li><li>Text: <code>#FFFFFF</code>, <code>#C3C4C8</code>.</li><li>Accent: <code>#D9FF42</code>.</li><li>Notes: observed default page language.</li></ul><h3>Shadows &amp; Depth</h3><ul><li>Prefer contrast blocks and borders over soft shadow-heavy SaaS cards.</li><li>Use subtle dark shadows only to separate floating header, dialogs, or active cards.</li><li>White panels may use almost no shadow because contrast against dark canvas already creates depth.</li></ul></section><section><h2>3. Typography Rules</h2><h3>Font Family</h3><ul><li>Primary: <code>&quot;qount.io--Inter&quot;, Inter, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, sans-serif</code>.</li><li>Monospace: <code>SFMono-Regular, monospace</code> for data labels or system readouts if needed.</li><li>OpenType Features: keep typography plain and functional; do not over-style accounting/product copy.</li></ul><h3>Hierarchy</h3><table><thead><tr><th>Role</th><th>Font</th><th>Size</th><th>Weight</th><th>Line Height</th><th>Letter Spacing</th><th>Notes</th></tr></thead><tbody><tr><td>Hero headline desktop</td><td>Inter</td><td><code>48px</code></td><td><code>700</code></td><td><code>56px</code></td><td><code>0</code></td><td>Direct business outcome headline.</td></tr><tr><td>Hero headline mobile</td><td>Inter</td><td><code>28px</code></td><td><code>700</code></td><td><code>32px</code></td><td><code>0</code></td><td>Compact but still authoritative.</td></tr><tr><td>Section heading</td><td>Inter</td><td><code>40px-48px</code></td><td><code>700</code></td><td><code>1.1-1.2</code></td><td><code>0</code></td><td>Used for big practice-intelligence statements.</td></tr><tr><td>Small heading</td><td>Inter</td><td><code>18px-24px</code></td><td><code>700</code></td><td><code>normal-1.25</code></td><td><code>0</code></td><td>Partner headings, card titles, tab panels.</td></tr><tr><td>Body</td><td>Inter</td><td><code>18px</code></td><td><code>400</code></td><td><code>22.5px</code></td><td><code>0</code></td><td>Observed body baseline; use slightly looser line-height in dense app UI.</td></tr><tr><td>Caption / Label</td><td>Inter</td><td><code>14px-16px</code></td><td><code>500-700</code></td><td><code>1.4</code></td><td><code>0</code></td><td>Metadata, section tags, nav labels.</td></tr><tr><td>Metric</td><td>Inter</td><td><code>40px-64px</code></td><td><code>700</code></td><td><code>1</code></td><td><code>0</code></td><td>Percentages, revenue values, major proof points.</td></tr></tbody></table><h3>Principles</h3><ul><li>Headlines are plain, bold, and outcome-oriented.</li><li>Avoid tight negative tracking; Qount typography is more straightforward than editorial.</li><li>Use metric type as a visual anchor.</li><li>Body copy can be direct and explanatory; it should sound operational, not poetic.</li></ul></section><section><h2>4. Component Stylings</h2><h3>Buttons and Links</h3><ul><li>Primary CTA: yellow <code>#D9FF42</code> fill, black text, firm rectangular or lightly rounded shape.</li><li>Secondary CTA: white fill with black text on dark backgrounds, or dark outline on light panels.</li><li>Text links: white on dark or black on light; underline is not dominant.</li><li>Hover and active feel: sharpen border, brighten yellow, small upward movement is acceptable but keep it restrained.</li></ul><h3>Cards and Containers</h3><ul><li>Surface style: mix dark graphite cards and high-contrast white panels.</li><li>Radius: many observed nav/menu surfaces use <code>10px-20px</code>; content panels can be <code>16px-24px</code>.</li><li>Border: graphite lines on dark, soft gray lines on light.</li><li>Shadow or elevation: low; rely on contrast and spacing.</li><li>Internal spacing: generous, usually <code>20px-40px</code> for content cards and panels.</li></ul><h3>Inputs and Interactive Controls</h3><ul><li>Input treatment: white or graphite field with clear border.</li><li>Focus behavior: yellow outline or dark border plus subtle glow.</li><li>Selection states: selected tab or checkbox should use yellow fill/marker with black text.</li></ul><h3>Navigation</h3><ul><li>Structure: fixed top header, desktop nav centered with right-side CTAs.</li><li>Background treatment: transparent over dark hero but visually anchored.</li><li>Link style: white, simple, unadorned; CTAs are stronger than nav links.</li><li>Sticky or scroll behavior: fixed header remains available while scrolling long content.</li></ul><h3>Image Treatment</h3><ul><li>Screenshot treatment: product imagery and canvas diagrams are integrated into large sections.</li><li>Photography or video: customer story cards include video/image proof, paired with metrics and quotes.</li><li>Border and radius treatment: medium radius for rich media cards; avoid overly rounded toy-like corners.</li></ul><h3>Distinctive Components</h3><ul><li>Metric cards: large percentages like <code>8-12%</code>, <code>3-7%</code>, <code>5-10%</code>, <code>$150K-$500K</code>.</li><li>Intelligence tabs: Operational, Client, Performance Intelligence with active panel.</li><li>Comparison blocks: traditional practice management versus Qount practice management.</li><li>Integration logo fields: tool ecosystem proof, spaced and orderly.</li><li>CTA narrative block: &quot;One Platform. Total Visibility.&quot; leading into demo action.</li></ul></section><section><h2>5. Layout Principles</h2><h3>Spacing System</h3><ul><li>Base unit: <code>10px</code> and <code>20px</code> are strongly reflected in observed grid variables.</li><li>Repeated spacing values: <code>20px</code>, <code>40px</code>, <code>60px</code>, <code>70px</code>, <code>84px</code>, <code>134px</code>.</li><li>Use larger vertical rhythm for long homepage-like flows.</li></ul><h3>Grid &amp; Container</h3><ul><li>Grid logic: 12-column grid with <code>20px</code> gaps.</li><li>Max content width: <code>1440px</code>.</li><li>Container side offset: <code>60px</code> on desktop; about <code>20px</code> on mobile.</li><li>Section spacing: large vertical sections, often with full-width bands.</li></ul><h3>Whitespace Philosophy</h3><ul><li>Use confident open space around major claims.</li><li>Balance dense proof content with large statement sections.</li><li>Keep dashboards and product modules structured rather than floating loosely.</li></ul><h3>Border Radius Scale</h3><ul><li>Micro: <code>6px-8px</code> for tags and small controls.</li><li>Standard: <code>10px-12px</code> for dropdown/menu items and fields.</li><li>Large: <code>16px-24px</code> for cards and major media panels.</li><li>Pill: use sparingly; Qount feels less pill-heavy than Linear.</li></ul></section><section><h2>6. Depth &amp; Elevation</h2><table><thead><tr><th>Level</th><th>Treatment</th><th>Use</th></tr></thead><tbody><tr><td>Flat dark</td><td><code>#1A1A1A</code>, no shadow</td><td>Page canvas and dark bands.</td></tr><tr><td>Dark card</td><td><code>#262626</code> with graphite border</td><td>App cards, upload zones, side panels.</td></tr><tr><td>Light panel</td><td><code>#FFFFFF</code> with black text</td><td>Important contrast panels and report blocks.</td></tr><tr><td>Accent</td><td><code>#D9FF42</code> fill or outline</td><td>Primary action, selected state, intelligence signal.</td></tr><tr><td>Overlay</td><td><code>rgba(0,0,0,0.72)</code></td><td>Modals and image previews.</td></tr></tbody></table><h3>Depth Principles</h3><ul><li>Depth comes from high contrast bands and alternating dark/light surfaces.</li><li>Do not blur or glass the core interface.</li><li>Keep shadows utilitarian and mostly reserved for modals, fixed navigation, and raised cards.</li><li>Use yellow as information priority, not decoration.</li></ul></section><section><h2>7. Do&#39;s and Don&#39;ts</h2><h3>Do</h3><ul><li>Use a grayscale-first system with a single strong yellow accent.</li><li>Make CTAs obvious and businesslike.</li><li>Use metrics and compact proof blocks as visual anchors.</li><li>Alternate dark and white panels to create rhythm.</li><li>Keep copy direct: risk, margin, utilization, visibility, intelligence.</li><li>Use strong rectangular composition and grid discipline.</li></ul><h3>Don&#39;t</h3><ul><li>Do not use blue/purple gradients as the main accent.</li><li>Do not make everything pill-shaped.</li><li>Do not use soft pastel SaaS styling.</li><li>Do not hide important actions in low-contrast ghost buttons.</li><li>Do not overuse decorative shadows or abstract blobs.</li><li>Do not make the page feel playful; it should feel accountable and operational.</li></ul></section><section><h2>8. Responsive Behavior</h2><h3>Breakpoints</h3><table><thead><tr><th>Name</th><th>Width</th><th>Key Changes</th></tr></thead><tbody><tr><td>Mobile</td><td><code>390px observed</code></td><td>Hero headline becomes <code>28px / 32px</code>; side padding compresses to about <code>20px</code>; nav becomes minimal.</td></tr><tr><td>Tablet</td><td><code>&lt;= 768px</code></td><td>Multi-column proof/cards should stack, CTAs become easier touch targets.</td></tr><tr><td>Desktop</td><td><code>1280px observed</code></td><td>Hero headline is <code>48px / 56px</code>; fixed header spans the viewport; container uses <code>60px</code> side margin.</td></tr><tr><td>Wide</td><td><code>1440px max</code></td><td>Full 12-column grid and generous content spacing.</td></tr></tbody></table><h3>Touch Targets</h3><ul><li>CTAs should be at least <code>40px</code> high.</li><li>Avoid tiny adjacent links in dense financial workflows.</li><li>Keep checkbox/tile selections clearly visible with yellow selected states.</li></ul><h3>Collapsing Strategy</h3><ul><li>Desktop behavior: fixed header, large two-column hero, long proof sections, tabbed panels.</li><li>Tablet behavior: stack columns but preserve alternating dark/light section rhythm.</li><li>Mobile behavior: reduce headline scale, use one-column cards, keep main CTA prominent.</li><li>Breakpoint-driven component changes: <code>48px</code> hero to <code>28px</code>, <code>60px</code> margin to <code>20px</code>.</li><li>Touch target and spacing adjustments: increase control height and reduce dense side-by-side actions.</li></ul></section><section><h2>9. Agent Prompt Guide</h2><h3>Quick Color Reference</h3><ul><li>Primary CTA: <code>#D9FF42</code> with <code>#1A1A1A</code> text.</li><li>Background: <code>#1A1A1A</code>.</li><li>Heading text: <code>#FFFFFF</code> on dark, <code>#1A1A1A</code> on light.</li><li>Body text: <code>#C3C4C8</code> on dark, <code>#4F4F4F</code> on light.</li><li>Border or ring: <code>#333333</code> on dark, <code>#E0E0E0</code> on light.</li><li>Accent: <code>#D9FF42</code>.</li></ul><h3>Quick Summary</h3><p>Build a dark-first accounting intelligence interface inspired by Qount. Use a charcoal <code>#1A1A1A</code> canvas, bold white Inter headlines, high-contrast white panels, and electric yellow <code>#D9FF42</code> for primary actions and selected states. Make the UI feel operational and data-led with metrics, strong grids, and direct business copy. Avoid purple/blue gradients, overly soft cards, and playful decoration.</p><h3>Example Component Prompts</h3><ul><li>Hero: Create a charcoal hero with a bold <code>48px</code> white headline, operational paragraph copy, a yellow primary CTA, a white secondary CTA, and product proof bullets.</li><li>Card: Create a graphite card with a subtle border, compact data label, large metric, and yellow action marker.</li><li>Navigation: Create a fixed dark header with white text links and high-contrast right-side CTAs.</li><li>Button or badge: Create a firm rectangular yellow button with black text, <code>10px-14px</code> radius, and a crisp hover border.</li></ul><h3>Ready-to-Use Prompt</h3><p>Use the Qount design language: dark charcoal canvas, Inter typography, bold white business headlines, alternating white information panels, electric yellow <code>#D9FF42</code> action states, visible metrics, and a disciplined 12-column grid. Keep the experience serious, operational, and accounting-tech focused while preserving all existing product functionality.</p><h3>Iteration Guide</h3><ol><li>Replace blue/purple accents with yellow and grayscale contrast.</li><li>Strengthen CTAs and selected states so actions are obvious.</li><li>Use white panels only for high-value contrast sections, not every card.</li><li>Add metric-like emphasis where the content needs hierarchy.</li></ol></section><section><h2>Optional Appendix: Interaction Patterns</h2><ul><li>Scroll: long page with fixed header and large narrative sections.</li><li>Tabs: intelligence panel uses selected tabs to switch operational/client/performance stories.</li><li>Hover: CTAs and links sharpen through contrast rather than elaborate motion.</li><li>Motion: subtle in-view reveals and canvas visuals; businesslike, not playful.</li><li>Content voice: direct, outcome-focused, emphasizing risk, margin, billing, capacity, visibility, and practice intelligence.</li></ul></section></article>
+            </div>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const sourceView = document.getElementById("sourceView");
+      const previewView = document.getElementById("previewView");
+      const copyButton = document.getElementById("copyButton");
+      const copyState = document.getElementById("copyState");
+      const viewButtons = document.querySelectorAll("[data-view]");
+
+      function setActiveView(view) {
+        const showSource = view === "source";
+        sourceView.hidden = !showSource;
+        previewView.hidden = showSource;
+        viewButtons.forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.view === view);
+        });
+      }
+
+      viewButtons.forEach((button) => {
+        button.addEventListener("click", () => setActiveView(button.dataset.view));
+      });
+
+      copyButton.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(sourceView.textContent || "");
+          copyState.textContent = "Copied";
+        } catch (error) {
+          copyState.textContent = "Clipboard unavailable";
+        }
+
+        setTimeout(() => {
+          copyState.textContent = "";
+        }, 1400);
+      });
+    </script>
+  </body>
+</html>

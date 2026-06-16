@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Linear Landing Page Preview</title>
+    <meta name="color-scheme" content="light" />
+    <style>
+      :root {
+        --page-bg: #08090A;
+        --page-bg-muted: rgb(12, 13, 14);
+        --surface-bg: #0F1011;
+        --surface-bg-muted: rgb(12, 13, 14);
+        --surface-border: #F7F8F8;
+        --surface-border-strong: rgb(41, 42, 43);
+        --surface-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 2px rgba(0, 0, 0, 0.04), 0 8px 8px -8px rgba(0, 0, 0, 0.04);
+        --surface-shadow-soft: 0 0 0 1px #F7F8F8;
+        --ink: #F7F8F8;
+        --muted: #8A8F98;
+        --subtle: rgb(118, 119, 119);
+        --accent: #5E6AD2;
+        --font-body: "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        --font-display: "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+        --font-mono: SFMono-Regular, ui-monospace, "SFMono-Regular", "SF Mono", Menlo, monospace;
+        --body-size: 15px;
+        --body-line: 24px;
+        --body-weight: 400;
+        --label-size: 13px;
+        --label-line: 19.5px;
+        --label-track: 0.04em;
+        --title-size: 32px;
+        --title-line: 38px;
+        --title-track: -0.836px;
+        --section-size: 32px;
+        --section-line: 40px;
+        --section-track: -0.836px;
+        --source-size: 13px;
+        --source-line: 24px;
+        --space-1: 8px;
+        --space-2: 12px;
+        --space-3: 16px;
+        --space-4: 24px;
+        --space-5: 32px;
+        --space-6: 40px;
+        --radius-panel: 8px;
+        --radius-card: 8px;
+        --radius-micro: 4px;
+        --radius-pill: 9999px;
+        --button-height: 40px;
+        --button-font-size: 13px;
+        --button-weight: 500;
+        --button-radius: 9999px;
+        --secondary-button-radius: 9999px;
+        --layout-gap: 24px;
+        --page-padding: 24px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: var(--body-size);
+        font-weight: var(--body-weight);
+        line-height: var(--body-line);
+        background:
+          radial-gradient(circle at top, color-mix(in srgb, var(--accent) 8%, transparent), transparent 30%),
+          linear-gradient(180deg, var(--page-bg) 0%, var(--page-bg-muted) 100%);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-image:
+          linear-gradient(color-mix(in srgb, var(--surface-border) 56%, transparent) 1px, transparent 1px),
+          linear-gradient(90deg, color-mix(in srgb, var(--surface-border) 56%, transparent) 1px, transparent 1px);
+        background-size: 100% calc(48px), calc(48px) 100%;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.3), transparent 88%);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .shell {
+        width: min(1440px, calc(100vw - (var(--page-padding) * 2)));
+        margin: 0 auto;
+        padding: var(--page-padding) 0 calc(var(--page-padding) * 1.2);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(340px, 0.92fr) minmax(420px, 1fr);
+        gap: var(--layout-gap);
+        align-items: start;
+      }
+
+      .stack {
+        display: grid;
+        gap: var(--space-4);
+      }
+
+      .panel {
+        overflow: hidden;
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-panel);
+        background: linear-gradient(180deg, color-mix(in srgb, var(--surface-bg) 88%, white) 0%, var(--surface-bg) 100%);
+        box-shadow: var(--surface-shadow);
+      }
+
+      .panel-inner {
+        padding: var(--space-4);
+      }
+
+      .hero-card {
+        position: relative;
+      }
+
+      .hero-card::before {
+        content: "";
+        position: absolute;
+        left: var(--space-4);
+        right: var(--space-4);
+        top: 0;
+        height: 3px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #08090A 0%, #0F1011 33%, #141516 67%, #191A1B 100%);
+      }
+
+      .eyebrow {
+        margin-bottom: var(--space-2);
+        color: var(--muted);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        letter-spacing: var(--label-track);
+        text-transform: uppercase;
+      }
+
+      .site-title,
+      .section-title {
+        margin: 0;
+        color: var(--ink);
+        font-family: var(--font-display);
+        font-weight: 600;
+      }
+
+      .site-title {
+        font-size: var(--title-size);
+        line-height: var(--title-line);
+        letter-spacing: var(--title-track);
+      }
+
+      .descriptor {
+        margin: var(--space-2) 0 0;
+        max-width: 42ch;
+        color: var(--muted);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+      }
+
+      .summary {
+        margin: var(--space-3) 0 0;
+        max-width: 56ch;
+        color: var(--muted);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin: var(--space-3) 0 0;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: calc(8px * 3);
+        padding: 0 var(--space-2);
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-pill);
+        background: var(--surface-bg);
+        color: var(--ink);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        box-shadow: var(--surface-shadow-soft);
+      }
+
+      .observed-link {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-top: var(--space-4);
+        padding-top: var(--space-3);
+        border-top: 1px solid var(--surface-border);
+        color: var(--muted);
+        font-size: var(--label-size);
+        overflow-wrap: anywhere;
+      }
+
+      .observed-link::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+      }
+
+      .section-title {
+        font-size: var(--section-size);
+        line-height: var(--section-line);
+        letter-spacing: var(--section-track);
+      }
+
+      .section-subtitle {
+        margin: var(--space-2) 0 var(--space-4);
+        color: var(--muted);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+      }
+
+      .palette-grid,
+      .theme-mode-grid,
+      .type-list,
+      .component-card,
+      .prompt-list,
+      .mini-grid,
+      .token-table {
+        display: grid;
+        gap: var(--space-2);
+      }
+
+      .palette-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-2);
+      }
+
+      .palette-row.neutral-row {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .theme-mode-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-3);
+      }
+
+      .theme-mode-card {
+        display: grid;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-card);
+        background: color-mix(in srgb, var(--surface-bg) 92%, white);
+      }
+
+      .theme-mode-card.is-dark {
+        background: #111111;
+        color: #f4f4f4;
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+
+      .theme-mode-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+      }
+
+      .theme-mode-label {
+        color: var(--subtle);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        letter-spacing: var(--label-track);
+        text-transform: uppercase;
+      }
+
+      .theme-mode-card.is-dark .theme-mode-label {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .theme-mode-note {
+        margin: 0;
+        color: var(--muted);
+        font-size: calc(var(--body-size) - 1px);
+        line-height: calc(var(--body-line) - 4px);
+      }
+
+      .theme-mode-card.is-dark .theme-mode-note {
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      .theme-swatch-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--space-2);
+      }
+
+      .theme-swatch {
+        display: grid;
+        gap: 6px;
+      }
+
+      .theme-swatch-box {
+        height: 72px;
+        border-radius: calc(var(--radius-card) - 4px);
+        border: 1px solid color-mix(in srgb, var(--surface-border-strong) 75%, transparent);
+      }
+
+      .theme-mode-card.is-dark .theme-swatch-box {
+        border-color: rgba(255, 255, 255, 0.14);
+      }
+
+      .theme-swatch-name {
+        color: inherit;
+        font-size: 12px;
+        line-height: 1.3;
+      }
+
+      .theme-swatch-value {
+        color: var(--subtle);
+        font-size: 11px;
+        line-height: 1.3;
+      }
+
+      .theme-mode-card.is-dark .theme-swatch-value {
+        color: rgba(255, 255, 255, 0.62);
+      }
+
+      .swatch {
+        display: grid;
+        gap: var(--space-2);
+      }
+
+      .swatch-box {
+        min-height: calc(8px * 12);
+        border-radius: var(--radius-card);
+        border: 1px solid color-mix(in srgb, var(--surface-border-strong) 75%, transparent);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 4%, transparent);
+      }
+
+      .swatch-label,
+      .token-heading,
+      .prompt-card strong,
+      .card-preview h4 {
+        color: var(--ink);
+        font-family: var(--font-display);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+        font-weight: 600;
+      }
+
+      .swatch-meta,
+      .type-metrics,
+      .mini-label,
+      .copy-state,
+      .file-tab,
+      .ghost-button,
+      .segmented button {
+        color: var(--muted);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+      }
+
+      .type-row {
+        display: grid;
+        grid-template-columns: 72px minmax(0, 1fr) auto;
+        gap: var(--space-2);
+        align-items: baseline;
+        padding: var(--space-2) 0;
+        border-top: 1px solid var(--surface-border);
+      }
+
+      .type-row:first-child,
+      .mini-row:first-child,
+      .token-row:first-child {
+        border-top: 0;
+        padding-top: 0;
+      }
+
+      .type-role {
+        color: var(--muted);
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+        letter-spacing: var(--label-track);
+        text-transform: uppercase;
+      }
+
+      .type-sample {
+        color: var(--ink);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .split-card {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-4);
+      }
+
+      .token-row,
+      .mini-row {
+        display: grid;
+        gap: var(--space-2);
+        align-items: start;
+        padding-top: var(--space-2);
+        border-top: 1px solid var(--surface-border);
+      }
+
+      .token-row {
+        grid-template-columns: 1fr auto;
+      }
+
+      .mini-row {
+        grid-template-columns: 88px minmax(0, 1fr);
+      }
+
+      .mini-content,
+      .prompt-card p,
+      .card-preview p {
+        color: var(--muted);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+      }
+
+      .radius-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-2);
+      }
+
+      .radius-card,
+      .prompt-card {
+        padding: var(--space-3);
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-card);
+        background: var(--surface-bg-muted);
+        box-shadow: var(--surface-shadow-soft);
+      }
+
+      .radius-demo {
+        aspect-ratio: 1;
+        width: 100%;
+        border: 1px solid var(--surface-border-strong);
+        background: var(--surface-bg);
+      }
+
+      .radius-name {
+        margin-top: var(--space-2);
+        color: var(--ink);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+        font-weight: 600;
+      }
+
+      .radius-value {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: var(--label-size);
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+      }
+
+      .cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: var(--button-height);
+        padding: 0 var(--space-3);
+        border-radius: var(--button-radius);
+        font-family: var(--font-body);
+        font-size: var(--button-font-size);
+        font-weight: var(--button-weight);
+        line-height: 1;
+        letter-spacing: normal;
+      }
+
+      .cta-primary {
+        border: 1px solid transparent;
+        background: #171717;
+        color: #ffffff;
+        border-radius: 9999px;
+      }
+
+      .cta-secondary {
+        border: 1px solid #171717;
+        background: #ffffff;
+        color: #171717;
+        border-radius: 9999px;
+        box-shadow: var(--surface-shadow-soft);
+      }
+
+      .card-preview {
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid color-mix(in srgb, var(--surface-border-strong) 72%, transparent);
+        background: var(--surface-bg);
+        color: var(--ink);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 2px rgba(0, 0, 0, 0.04), 0 8px 8px -8px rgba(0, 0, 0, 0.04);
+      }
+
+      .card-preview h4 {
+        margin: 0 0 var(--space-1);
+      }
+
+      .source-shell {
+        position: sticky;
+        top: var(--page-padding);
+      }
+
+      .source-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+        padding: var(--space-3) var(--space-4) var(--space-2);
+        border-bottom: 1px solid var(--surface-border);
+      }
+
+      .file-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px var(--space-3);
+      }
+
+      .file-tab {
+        padding: 0 0 var(--space-2);
+        border-bottom: 2px solid transparent;
+      }
+
+      .file-tab.active {
+        color: var(--ink);
+        border-bottom-color: var(--ink);
+        font-weight: 600;
+      }
+
+      .source-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-4);
+        border-bottom: 1px solid var(--surface-border);
+      }
+
+      .segmented {
+        display: inline-flex;
+        padding: 3px;
+        border: 1px solid var(--surface-border);
+        border-radius: var(--radius-pill);
+        background: var(--surface-bg-muted);
+      }
+
+      .segmented button {
+        border: 0;
+        border-radius: var(--radius-pill);
+        background: transparent;
+        padding: 6px 12px;
+        cursor: pointer;
+      }
+
+      .segmented button.is-active {
+        background: var(--surface-bg);
+        color: var(--ink);
+        box-shadow: var(--surface-shadow-soft);
+      }
+
+      .toolbar-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        margin-left: auto;
+      }
+
+      .ghost-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border: 1px solid var(--surface-border);
+        border-radius: 4px;
+        background: var(--surface-bg);
+        box-shadow: var(--surface-shadow-soft);
+        cursor: pointer;
+      }
+
+      .source-body {
+        max-height: calc(100vh - (var(--page-padding) * 2) - 120px);
+        overflow: auto;
+      }
+
+      .source-view,
+      .rendered-view {
+        margin: 0;
+        padding: var(--space-4);
+      }
+
+      .source-view {
+        color: var(--ink);
+        font-family: var(--font-mono);
+        font-size: var(--source-size);
+        line-height: var(--source-line);
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: var(--surface-bg);
+      }
+
+      .rendered-view {
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: var(--body-size);
+        line-height: var(--body-line);
+        background: var(--surface-bg);
+      }
+
+      .rendered-view[hidden],
+      .source-view[hidden] {
+        display: none;
+      }
+
+      .rendered-view h2,
+      .rendered-view h3 {
+        margin: var(--space-4) 0 var(--space-2);
+        color: var(--ink);
+        font-family: var(--font-display);
+        font-weight: 600;
+      }
+
+      .rendered-view h2 {
+        font-size: var(--section-size);
+        line-height: var(--section-line);
+        letter-spacing: var(--section-track);
+      }
+
+      .rendered-view h2:first-child {
+        margin-top: 0;
+      }
+
+      .rendered-view h3 {
+        color: var(--muted);
+        font-size: calc(32px - 4px);
+        line-height: calc(38px - 4px);
+      }
+
+      .rendered-view p,
+      .rendered-view li {
+        color: var(--muted);
+      }
+
+      .rendered-view ul,
+      .rendered-view ol {
+        margin: 0 0 var(--space-3) 20px;
+        padding: 0;
+      }
+
+      .rendered-view table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: var(--space-2) 0 var(--space-4);
+      }
+
+      .rendered-view th,
+      .rendered-view td {
+        padding: var(--space-2) var(--space-2);
+        border: 1px solid var(--surface-border);
+        text-align: left;
+        vertical-align: top;
+        font-size: var(--label-size);
+        line-height: var(--label-line);
+      }
+
+      .rendered-view th {
+        color: var(--ink);
+        background: var(--surface-bg-muted);
+      }
+
+      .rendered-view code {
+        padding: 0.14em 0.4em;
+        border-radius: 4px;
+        background: var(--surface-bg-muted);
+        color: var(--ink);
+        font-family: var(--font-mono);
+        font-size: 0.92em;
+      }
+
+      @media (max-width: 1120px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .source-shell {
+          position: relative;
+          top: 0;
+        }
+
+        .source-body {
+          max-height: none;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .shell {
+          width: min(100vw - (12px * 2), 100%);
+          padding-top: 12px;
+        }
+
+        .panel-inner,
+        .source-view,
+        .rendered-view {
+          padding-left: var(--space-3);
+          padding-right: var(--space-3);
+        }
+
+        .palette-row,
+        .palette-row.neutral-row,
+        .theme-mode-grid,
+        .theme-swatch-row,
+        .split-card,
+        .radius-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .type-row,
+        .mini-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <div class="layout">
+        <section class="stack">
+          <article class="panel hero-card">
+            <div class="panel-inner">
+              <div class="eyebrow">Design Preview</div>
+              <h1 class="site-title">Linear Landing Page</h1>
+              <p class="descriptor">Linear presents itself as a high-precision product development system.</p>
+              <div class="chip-row"><span class="chip">Near-black background with surfa...</span><span class="chip">Large, low-weight display typogr...</span><span class="chip">Muted gray secondary text that c...</span><span class="chip">Violet-blue accents used sparing...</span><span class="chip">Product UI screenshots and workf...</span><span class="chip">Minimal decoration; atmosphere c...</span></div>
+              <p class="summary">Linear presents itself as a high-precision product development system. The page feels quiet, technical, premium, and engineered rather than decorative. The dominant impression is a near-black workspace with luminous typography, thin structural lines, restrained violet-blue accents, and large product workflow modules.</p>
+              <a class="observed-link" href="https://linear.app/?ref=land-book.com" target="_blank" rel="noreferrer">https://linear.app/?ref=land-book.com</a>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Palette</h2>
+              <p class="section-subtitle">Roles and neutrals rendered using the extracted design system rather than a separate display theme.</p>
+              <div class="palette-grid"><div class="palette-row"><div class="swatch">
+    <div class="swatch-box" style="background:#08090A;"></div>
+    <div class="swatch-label">Marketing black</div>
+    <div class="swatch-meta">
+      <span>#08090A / #010102</span>
+      <span>Page background</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#0F1011;"></div>
+    <div class="swatch-label">Panel black</div>
+    <div class="swatch-meta">
+      <span>#0F1011</span>
+      <span>Primary surface</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#141516;"></div>
+    <div class="swatch-label">Raised graphite</div>
+    <div class="swatch-meta">
+      <span>#141516</span>
+      <span>Secondary surface</span>
+    </div>
+  </div></div><div class="palette-row neutral-row"><div class="swatch">
+    <div class="swatch-box" style="background:#191A1B;"></div>
+    <div class="swatch-label">Control graphite</div>
+    <div class="swatch-meta">
+      <span>#191A1B</span>
+      <span>Tertiary surface</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#F7F8F8;"></div>
+    <div class="swatch-label">Frost white</div>
+    <div class="swatch-meta">
+      <span>#F7F8F8</span>
+      <span>Primary text</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#D0D6E0;"></div>
+    <div class="swatch-label">Cool silver</div>
+    <div class="swatch-meta">
+      <span>#D0D6E0</span>
+      <span>Secondary text</span>
+    </div>
+  </div><div class="swatch">
+    <div class="swatch-box" style="background:#8A8F98;"></div>
+    <div class="swatch-label">System gray</div>
+    <div class="swatch-meta">
+      <span>#8A8F98</span>
+      <span>Tertiary text</span>
+    </div>
+  </div></div></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Theme Modes</h2>
+              <p class="section-subtitle">If the product supports light and dark themes, both modes should stay visible in the exported design system and preview.</p>
+              <div class="prompt-card"><strong>Single mode detected</strong><p>No explicit <code>Theme Modes</code> section was detected in the markdown. If the product supports both light and dark themes, document both so the preview can render them side by side.</p></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Typography</h2>
+              <p class="section-subtitle">The preview shell itself now uses the extracted typography stack, sizes, line heights, and tracking.</p>
+              <div class="type-list"><div class="type-row">
+        <div class="type-role">Hero headline desktop</div>
+        <div
+          class="type-sample"
+          style="font-size:48px; line-height:56px; font-weight:500; letter-spacing:-1.4px; font-family:&quot;Inter Variable&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">64px • 510 • 64px</div>
+      </div><div class="type-row">
+        <div class="type-role">Hero headline mobile</div>
+        <div
+          class="type-sample"
+          style="font-size:38px; line-height:41.8px; font-weight:500; letter-spacing:-0.836px; font-family:&quot;Inter Variable&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">38px • 510 • 41.8px</div>
+      </div><div class="type-row">
+        <div class="type-role">Section statement desktop</div>
+        <div
+          class="type-sample"
+          style="font-size:40px; line-height:44px; font-weight:500; letter-spacing:-0.88px; font-family:&quot;Inter Variable&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">40px • 510 • 44px</div>
+      </div><div class="type-row">
+        <div class="type-role">Section statement mobile</div>
+        <div
+          class="type-sample"
+          style="font-size:24px; line-height:31.92px; font-weight:500; letter-spacing:-0.288px; font-family:&quot;Inter Variable&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">24px • 510 • 31.92px</div>
+      </div><div class="type-row">
+        <div class="type-role">Body</div>
+        <div
+          class="type-sample"
+          style="font-size:15px; line-height:24px; font-weight:400; letter-spacing:-0.165px; font-family:&quot;Inter Variable&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">15px • 400 • 24px</div>
+      </div><div class="type-row">
+        <div class="type-role">Large body</div>
+        <div
+          class="type-sample"
+          style="font-size:17px; line-height:27px; font-weight:400; letter-spacing:normal; font-family:&quot;Inter Variable&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">17px • 400 • 27px</div>
+      </div><div class="type-row">
+        <div class="type-role">Button / Nav</div>
+        <div
+          class="type-sample"
+          style="font-size:13px; line-height:19.5px; font-weight:400; letter-spacing:normal; font-family:&quot;Inter Variable&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Arial, sans-serif;"
+        >
+          The quick brown fox jumps
+        </div>
+        <div class="type-metrics">13px • 400-510 • 19.5px</div>
+      </div><div class="type-row">
+        <div class="type-role">Meta / Eyebrow</div>
+        <div
+          class="type-sample"
+          style="font-size:12px; line-height:12px; font-weight:500; letter-spacing:normal; font-family:SFMono-Regular, ui-monospace, &quot;SFMono-Regular&quot;, &quot;SF Mono&quot;, Menlo, monospace;"
+        >
+          const preview = true;
+        </div>
+        <div class="type-metrics">10-12px • 500-590 • 1.4-1.5</div>
+      </div></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Spacing &amp; Shape</h2>
+              <p class="section-subtitle">Spacing, panel padding, and radius tokens are mapped directly from the layout rules in the markdown.</p>
+              <div class="split-card">
+    <div>
+      <h3 class="token-heading">Spacing</h3>
+      <div class="token-table"><div class="token-row">
+        <span>Base unit</span>
+        <span>8px</span>
+      </div><div class="token-row">
+        <span>Step 2</span>
+        <span>12px</span>
+      </div><div class="token-row">
+        <span>Step 3</span>
+        <span>16px</span>
+      </div><div class="token-row">
+        <span>Step 4</span>
+        <span>24px</span>
+      </div><div class="token-row">
+        <span>Step 5</span>
+        <span>32px</span>
+      </div></div>
+    </div>
+    <div>
+      <h3 class="token-heading">Border Radius</h3>
+      <div class="radius-grid"><div class="radius-card">
+        <div class="radius-demo" style="border-radius:4px;"></div>
+        <div class="radius-name">Micro utility</div>
+        <div class="radius-value">4px</div>
+      </div><div class="radius-card">
+        <div class="radius-demo" style="border-radius:8px;"></div>
+        <div class="radius-name">Standard module</div>
+        <div class="radius-value">8px</div>
+      </div><div class="radius-card">
+        <div class="radius-demo" style="border-radius:9999px;"></div>
+        <div class="radius-name">Category rail</div>
+        <div class="radius-value">9999px</div>
+      </div><div class="radius-card">
+        <div class="radius-demo" style="border-radius:9999px;"></div>
+        <div class="radius-name">CTA pill</div>
+        <div class="radius-value">9999px</div>
+      </div></div>
+    </div>
+  </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Components</h2>
+              <p class="section-subtitle">Buttons and cards use the documented height, weight, radius, colors, and surface treatment.</p>
+              <div class="component-card">
+    <div class="button-row">
+      <span class="cta cta-primary">Start Deploying</span>
+      <span class="cta cta-secondary">Get a Demo</span>
+    </div>
+    <div class="card-preview">
+      <h4>System Card Preview</h4>
+      <p>dark graphite surfaces on black, usually one neutral step above the page.</p>
+    </div>
+  </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">System Notes</h2>
+              <p class="section-subtitle">Responsive behavior and depth rules stay visible while keeping the overall proportions calm and readable.</p>
+              <div class="split-card">
+    <div>
+      <h3 class="token-heading">Breakpoints</h3>
+      <div class="mini-grid"><div class="mini-row">
+            <div class="mini-label">Mobile</div>
+            <div class="mini-content"><strong>&lt;= 640px</strong><br />Hero title reduces to about 38px; nav links collapse; sections become single-column with 16px-24px side padding.</div>
+          </div><div class="mini-row">
+            <div class="mini-label">Tablet</div>
+            <div class="mini-content"><strong>&lt;= 768px</strong><br />Section headings reduce, product modules stack, text widths tighten.</div>
+          </div><div class="mini-row">
+            <div class="mini-label">Laptop</div>
+            <div class="mini-content"><strong>&lt;= 1024px</strong><br />Hero title moves from largest display scale to 56px-like scale; content density decreases.</div>
+          </div><div class="mini-row">
+            <div class="mini-label">Desktop</div>
+            <div class="mini-content"><strong>&gt;= 1280px</strong><br />Wide product panels, full navigation, large narrative headings, broad screenshot areas.</div>
+          </div></div>
+    </div>
+    <div>
+      <h3 class="token-heading">Elevation</h3>
+      <div class="mini-grid"><div class="mini-row">
+            <div class="mini-label">Flat</div>
+            <div class="mini-content"><strong>#08090A canvas, no border</strong><br />Page background and full-width bands.</div>
+          </div><div class="mini-row">
+            <div class="mini-label">Ring</div>
+            <div class="mini-content"><strong>1px solid #23252A or translucent white</strong><br />Buttons, cards, screenshot frames, dividers.</div>
+          </div><div class="mini-row">
+            <div class="mini-label">Card</div>
+            <div class="mini-content"><strong>#0F1011 or #141516 with hairline border</strong><br />Workflow panels and product modules.</div>
+          </div><div class="mini-row">
+            <div class="mini-label">Focus</div>
+            <div class="mini-content"><strong>Accent-tinted border or brighter text</strong><br />Keyboard focus, selected tabs, active controls.</div>
+          </div></div>
+    </div>
+  </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-inner">
+              <h2 class="section-title">Prompt Guide</h2>
+              <p class="section-subtitle">Prompt snippets are shown in the same typography and spacing language as the extracted design system.</p>
+              <div class="prompt-list"><div class="prompt-card"><strong>Quick Summary</strong><p>Build a dark-first, precise B2B product interface inspired by Linear&#39;s landing page. Use near-black backgrounds, cool gray hierarchy, compact pill controls, hairline borders, and sparse periwinkle accents. Let product screenshots and workflow modules do the visual work. Keep typography large but restrained, with tight tracking and modest weights. Avoid decorative gradients, oversized marketing cards, and loud color blocks.</p></div><div class="prompt-card">
+            <strong>Hero</strong>
+            <p>Create a centered dark hero with a 64px desktop headline, 17px muted subcopy, compact pill CTA row, and a framed product screenshot below.</p>
+          </div><div class="prompt-card">
+            <strong>Card</strong>
+            <p>Create a graphite product module with a 1px cool border, 12px radius, muted body text, tiny mono metadata label, and a subtle hover border shift.</p>
+          </div><div class="prompt-card">
+            <strong>Navigation</strong>
+            <p>Create a 72px transparent dark nav with compact muted links, pill CTAs, and hover states that brighten text without changing layout.</p>
+          </div><div class="prompt-card">
+            <strong>Button or badge</strong>
+            <p>Create a 32px high pill with 9999px radius, 13px text, dark graphite fill, hairline border, and 0.1s hover transition.</p>
+          </div><div class="prompt-card"><strong>Ready-to-Use Prompt</strong><p>Use the Linear landing page design language: dark-first #08090A canvas, Inter Variable typography, tight display tracking, cool gray text hierarchy, compact pill controls, hairline graphite borders, minimal shadows, and sparse periwinkle #828FFF accents. Structure the page as a serious product-system interface with workflow modules and real UI screenshots rather than decorative marketing sections.</p></div></div>
+              <div class="split-card" style="margin-top:var(--space-4);">
+    <div>
+      <h3 class="token-heading">Do</h3>
+      <div class="mini-grid"><div class="mini-row"><div class="mini-label">Do</div><div class="mini-content">Use near-black backgrounds with cool gray type hierarchy.</div></div><div class="mini-row"><div class="mini-label">Do</div><div class="mini-content">Use product screenshots, workflow diagrams, and interface fragments as primary visuals.</div></div><div class="mini-row"><div class="mini-label">Do</div><div class="mini-content">Keep buttons compact, pill-shaped, and restrained.</div></div><div class="mini-row"><div class="mini-label">Do</div><div class="mini-content">Make borders thin and purposeful.</div></div></div>
+    </div>
+    <div>
+      <h3 class="token-heading">Don't</h3>
+      <div class="mini-grid"><div class="mini-row"><div class="mini-label">Don't</div><div class="mini-content">Do not use bright gradients, blobs, bokeh, or decorative abstract art.</div></div><div class="mini-row"><div class="mini-label">Don't</div><div class="mini-content">Do not make heavy rounded marketing cards or nested card stacks.</div></div><div class="mini-row"><div class="mini-label">Don't</div><div class="mini-content">Do not overuse the accent color across large backgrounds.</div></div><div class="mini-row"><div class="mini-label">Don't</div><div class="mini-content">Do not use warm beige, tan, or overly saturated palettes.</div></div></div>
+    </div>
+  </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="source-shell">
+          <article class="panel">
+            <div class="source-header">
+              <div class="file-tabs">
+                <span class="file-tab">design-system.md</span>
+                <span class="file-tab active">DESIGN.md</span>
+                <span class="file-tab">Design JSON</span>
+                <span class="file-tab">CSS Variables</span>
+                <span class="file-tab">Design Tokens</span>
+              </div>
+            </div>
+            <div class="source-toolbar">
+              <div class="segmented" role="tablist" aria-label="View Switcher">
+                <button class="is-active" data-view="source" type="button">Source</button>
+                <button data-view="preview" type="button">Preview</button>
+              </div>
+              <div class="toolbar-actions">
+                <button class="ghost-button" id="copyButton" type="button">Copy</button>
+                <a class="ghost-button" href="DESIGN.md" download>Open .md</a>
+                <span class="copy-state" id="copyState"></span>
+              </div>
+            </div>
+            <div class="source-body">
+              <pre class="source-view" id="sourceView"># Design System: Linear Landing Page
+
+Source: https://linear.app/?ref=land-book.com
+
+This document distills the observed Linear landing page into a reusable design system. It is not a pixel clone. Use it to reproduce the same dark, precise, product-system feeling in another interface.
+
+## 1. Visual Theme &amp; Atmosphere
+
+Linear presents itself as a high-precision product development system. The page feels quiet, technical, premium, and engineered rather than decorative. The dominant impression is a near-black workspace with luminous typography, thin structural lines, restrained violet-blue accents, and large product workflow modules.
+
+- Overall feeling: dark-first, cinematic, exacting, confident.
+- Visual density: sparse at the hero, denser in workflow and product modules.
+- Brand posture: system-level tool for serious product teams and AI-era workflows.
+- Signature motifs: pill controls, hairline borders, muted gray copy, product screenshots, workflow stages, tiny metadata labels, subtle violet-blue action states.
+
+### Key Characteristics
+
+- Near-black background with surfaces separated by thin borders instead of heavy shadows.
+- Large, low-weight display typography with tight negative tracking.
+- Muted gray secondary text that carries much of the section hierarchy.
+- Violet-blue accents used sparingly for links, selected states, and brand emphasis.
+- Product UI screenshots and workflow panels treated as the main visual asset.
+- Minimal decoration; atmosphere comes from spacing, contrast, and precise component rhythm.
+
+## 2. Color Palette &amp; Roles
+
+| Role | Semantic Name | Value | Usage |
+| --- | --- | --- | --- |
+| Page background | Marketing black | `#08090A` / `#010102` | Full-page canvas and footer background. |
+| Primary surface | Panel black | `#0F1011` | Product panels, inset cards, dark containers. |
+| Secondary surface | Raised graphite | `#141516` | Subtle module separation and tinted blocks. |
+| Tertiary surface | Control graphite | `#191A1B` | Buttons, tabs, cards, screenshot shells. |
+| Primary text | Frost white | `#F7F8F8` | Headlines, important labels, active items. |
+| Secondary text | Cool silver | `#D0D6E0` | Supporting heading copy and emphasized body text. |
+| Tertiary text | System gray | `#8A8F98` | Paragraphs, nav items, captions, inactive controls. |
+| Quaternary text | Dim graphite | `#62666D` | Metadata, subdued labels, disabled states. |
+| Primary border | Hairline graphite | `#23252A` | Component outlines and module dividers. |
+| Secondary border | Structural graphite | `#34343A` | Stronger separators and hovered controls. |
+| Translucent border | Soft white line | `rgba(255,255,255,0.05)` | Screenshot frames, subtle rings, overlays. |
+| Accent | Linear indigo | `#5E6AD2` | Brand color and occasional filled emphasis. |
+| Accent link | Electric periwinkle | `#828FFF` | Links, hover states, selected text, active indicators. |
+| Accent tint | Deep indigo tint | `#18182F` | Low-contrast accent backgrounds. |
+| Success | Product green | `#27A644` | Rare status indicators and positive signals. |
+
+### Primary
+
+- Use `#08090A` as the default application background. It should feel black but not flat pure black.
+- Use `#F7F8F8` only for top-priority text and active states. Most copy should sit lower in the hierarchy.
+- Use `#828FFF` as a precise accent, not as a large decorative wash.
+
+### Interactive
+
+- Links default to `#828FFF` and can hover toward `#FFFFFF`.
+- Buttons are usually pill-shaped, compact, and low-contrast until hovered.
+- Active or selected states should use text brightness, border clarity, or a small accent fill instead of oversized color blocks.
+
+### Neutral Scale
+
+- `#0F1011`, `#141516`, `#191A1B`, `#23252A`, `#34343A`, `#3E3E44` form the structural dark scale.
+- The page avoids warm grays. Neutrals lean cool and slightly blue.
+- Use borders and background shifts of only one or two neutral steps for depth.
+
+### Surface &amp; Overlay
+
+- Surfaces should be restrained: black panels, transparent overlays, hairline outlines.
+- Modal or overlay dimming can use `rgba(0,0,0,0.85)`.
+- Avoid glossy glassmorphism. Linear&#39;s depth language is flatter and more engineered.
+
+### Theme Modes
+
+The inspected public landing page is dark-first. No visible user-facing theme switch was observed during extraction. If adapting this system to light mode, treat light mode as an application-specific extension rather than an observed Linear rule.
+
+#### Light Mode
+
+- Background: use a cool off-white such as `#F7F8F8` only if the target product requires a light appearance.
+- Surface: use `#FFFFFF` with very light cool borders.
+- Text: invert the hierarchy into graphite text, preserving muted secondary tiers.
+- Accent: keep indigo/periwinkle as the stable brand accent.
+- Notes: inferred extension, not directly observed on the inspected landing page.
+
+#### Dark Mode
+
+- Background: `#08090A` or `#010102`.
+- Surface: `#0F1011`, `#141516`, `#191A1B`.
+- Text: `#F7F8F8`, `#D0D6E0`, `#8A8F98`, `#62666D`.
+- Accent: `#828FFF`, `#5E6AD2`.
+- Notes: this is the observed default.
+
+### Shadows &amp; Depth
+
+- Prefer borders and surface changes over heavy shadow stacks.
+- Use translucent white outlines on screenshot-like panels.
+- Focus and hover states should feel crisp and immediate, not glowy.
+
+## 3. Typography Rules
+
+### Font Family
+
+- Primary: `&quot;Inter Variable&quot;, &quot;SF Pro Display&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, Cantarell, &quot;Open Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif`.
+- Monospace: use a narrow technical mono such as `&quot;Berkeley Mono&quot;, &quot;SFMono-Regular&quot;, Consolas, monospace` for metadata, stage numbers, and code-like labels.
+- OpenType Features: use tight spacing and refined numerals where available; avoid decorative alternates.
+
+### Hierarchy
+
+| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| Hero headline desktop | Inter Variable | `64px` | `510` | `64px` | `-1.4px` | Centered or strongly anchored, compact and luminous. |
+| Hero headline mobile | Inter Variable | `38px` | `510` | `41.8px` | `-0.836px` | Wraps into multiple short lines with generous top spacing. |
+| Section statement desktop | Inter Variable | `40px` | `510` | `44px` | `-0.88px` | Often muted gray, used as narrative heading copy. |
+| Section statement mobile | Inter Variable | `24px` | `510` | `31.92px` | `-0.288px` | Still prominent but more conversational. |
+| Body | Inter Variable | `15px` | `400` | `24px` | `-0.165px` | Product copy and explanatory text. |
+| Large body | Inter Variable | `17px` | `400` | `27px` | slight negative | Hero subcopy and important paragraphs. |
+| Button / Nav | Inter Variable | `13px` | `400-510` | `19.5px` | slight negative | Compact, quiet, pill-based controls. |
+| Meta / Eyebrow | Mono or Inter | `10-12px` | `500-590` | `1.4-1.5` | `0` to slight positive | Stage labels, version numbers, small descriptors. |
+
+### Principles
+
+- Display text should be large but not loud; weight stays around `510-590`.
+- Use muted gray headings for long narrative statements to avoid marketing heaviness.
+- Tight tracking is part of the identity. Do not use wide letter spacing except in tiny technical labels.
+- Keep body text compact and readable, usually near `15px / 24px`.
+
+## 4. Component Stylings
+
+### Buttons and Links
+
+- Primary CTA: compact pill, `32px` height on desktop navigation, rounded `9999px`, light fill when inverted or subtle dark fill in context.
+- Secondary CTA: transparent or dark graphite pill with hairline border, muted text, stronger border on hover.
+- Text links: periwinkle `#828FFF`; arrow symbols are common for forward motion.
+- Hover and active feel: very fast, precise, often a border or text color change in `0.1s-0.15s`.
+
+### Cards and Containers
+
+- Surface style: dark graphite surfaces on black, usually one neutral step above the page.
+- Radius: `8px` and `12px` are standard; `16px` and above are reserved for larger screenshot shells or major modules.
+- Border: `1px solid #23252A` or translucent white for image/product frames.
+- Shadow or elevation: minimal. Use layered borders and slight background shifts instead.
+- Internal spacing: compact for controls, expansive for hero and feature sections.
+
+### Inputs and Interactive Controls
+
+- Input treatment: dark surface, subtle border, compact label, muted placeholder.
+- Focus behavior: border shifts toward accent or brighter gray; avoid thick outlines.
+- Selection states: use pill tabs, small active indicators, or accent text.
+
+### Navigation
+
+- Structure: desktop navigation spans about `72px` high; mobile is closer to `64px`.
+- Background treatment: transparent over the same dark canvas, no heavy app bar.
+- Link style: compact muted text, hover brightens toward primary white.
+- Sticky or scroll behavior: navigation is visually persistent in spirit, but the observed mobile snapshot used a simple top bar with hidden desktop links and visible login/signup actions.
+
+### Image Treatment
+
+- Screenshot treatment: product UI screenshots are the hero visual asset; frame them with thin lines, dark shells, and measured radius.
+- Photography or illustration style: avoid generic photos and decorative illustrations. Use actual product states, workflow panels, and interface fragments.
+- Border and radius treatment: subtle `8px-16px` radius, `rgba(255,255,255,0.05)` border, no thick drop shadows.
+
+### Distinctive Components
+
+- Workflow stage modules: numbered sequence sections like `1.0 Intake`, `2.0 Plan`, `3.0 Build`, `4.0 Diffs`, `5.0 Monitor`.
+- Pill navigation and pill CTAs: small, calm controls with high polish.
+- Product narrative bands: large muted headings that read like product philosophy rather than sales slogans.
+- Customer quote rows: short, high-signal quotes from recognizable teams, kept visually quiet.
+- Final CTA: direct, confident, minimal; no oversized marketing clutter.
+
+## 5. Layout Principles
+
+### Spacing System
+
+- Base unit: `8px`.
+- Repeated spacing values: `16px`, `24px`, `32px`, `48px`, `64px`, `96px`, `128px`.
+- Mobile section spacing compresses but remains airy; avoid stacking cards too tightly.
+
+### Grid &amp; Container
+
+- Grid logic: wide centered content with constrained inner reading widths.
+- Max content width: large homepage containers can approach `1280px-1344px`, with small side insets.
+- Section spacing: large vertical bands; product modules appear as full-width narrative blocks rather than isolated floating cards.
+
+### Whitespace Philosophy
+
+- Whitespace is structural and cinematic, especially around the hero.
+- Alignment tends to be centered for hero messaging and grid-based for product modules.
+- Long text blocks should be kept narrow enough for scanning, while product visuals can span wide.
+
+### Border Radius Scale
+
+- Micro: `4px` for tiny badges or internal UI details.
+- Standard: `8px` for controls and small panels.
+- Large: `12px-16px` for cards and product screenshots.
+- XL: `24px-32px` only for major containers when the layout needs a softer shell.
+- Pill: `9999px` for buttons, nav chips, and compact CTAs.
+
+## 6. Depth &amp; Elevation
+
+| Level | Treatment | Use |
+| --- | --- | --- |
+| Flat | `#08090A` canvas, no border | Page background and full-width bands. |
+| Ring | `1px solid #23252A` or translucent white | Buttons, cards, screenshot frames, dividers. |
+| Card | `#0F1011` or `#141516` with hairline border | Workflow panels and product modules. |
+| Focus | Accent-tinted border or brighter text | Keyboard focus, selected tabs, active controls. |
+
+### Depth Principles
+
+- Surface hierarchy should be almost imperceptible until content or interaction clarifies it.
+- Shadows are not a primary motif; avoid soft floating SaaS card stacks.
+- Blur and glass should be rare. If used, keep it black and functional.
+- Depth exists to clarify product screenshots, not to decorate the page.
+
+## 7. Do&#39;s and Don&#39;ts
+
+### Do
+
+- Use near-black backgrounds with cool gray type hierarchy.
+- Use product screenshots, workflow diagrams, and interface fragments as primary visuals.
+- Keep buttons compact, pill-shaped, and restrained.
+- Make borders thin and purposeful.
+- Use periwinkle accent sparingly to signal action or selection.
+- Let large typography and spacing carry the premium feeling.
+
+### Don&#39;t
+
+- Do not use bright gradients, blobs, bokeh, or decorative abstract art.
+- Do not make heavy rounded marketing cards or nested card stacks.
+- Do not overuse the accent color across large backgrounds.
+- Do not use warm beige, tan, or overly saturated palettes.
+- Do not make UI copy playful or casual; keep it direct and product-focused.
+- Do not rely on large drop shadows for depth.
+
+## 8. Responsive Behavior
+
+### Breakpoints
+
+| Name | Width | Key Changes |
+| --- | --- | --- |
+| Mobile | `&lt;= 640px` | Hero title reduces to about `38px`; nav links collapse; sections become single-column with `16px-24px` side padding. |
+| Tablet | `&lt;= 768px` | Section headings reduce, product modules stack, text widths tighten. |
+| Laptop | `&lt;= 1024px` | Hero title moves from largest display scale to `56px`-like scale; content density decreases. |
+| Desktop | `&gt;= 1280px` | Wide product panels, full navigation, large narrative headings, broad screenshot areas. |
+
+### Touch Targets
+
+- Keep tappable pills at least `32px` high; larger touch areas can be invisible around compact labels.
+- Preserve spacing between interactive pills so the interface remains calm on mobile.
+
+### Collapsing Strategy
+
+- Desktop behavior: full nav, large hero, wide product-system visuals, multi-column proof sections.
+- Tablet behavior: reduce title scale, stack dense modules, keep generous section rhythm.
+- Mobile behavior: single-column page, hidden desktop nav links, compact top actions, hero centered with large top breathing room.
+- Breakpoint-driven component changes: title scales from `64px` to `38px`; section statements from `40px` to `24px`.
+- Touch target and spacing adjustments: avoid cramped nav rows; prefer fewer visible actions.
+
+## 9. Agent Prompt Guide
+
+### Quick Color Reference
+
+- Primary CTA: `#E5E5E6` fill with dark text for inverted CTA, or dark pill with `#23252A` border.
+- Background: `#08090A`.
+- Heading text: `#F7F8F8`.
+- Body text: `#8A8F98`.
+- Border or ring: `#23252A` / `rgba(255,255,255,0.05)`.
+- Accent: `#828FFF`.
+
+### Quick Summary
+
+Build a dark-first, precise B2B product interface inspired by Linear&#39;s landing page. Use near-black backgrounds, cool gray hierarchy, compact pill controls, hairline borders, and sparse periwinkle accents. Let product screenshots and workflow modules do the visual work. Keep typography large but restrained, with tight tracking and modest weights. Avoid decorative gradients, oversized marketing cards, and loud color blocks.
+
+### Example Component Prompts
+
+- Hero: Create a centered dark hero with a `64px` desktop headline, `17px` muted subcopy, compact pill CTA row, and a framed product screenshot below.
+- Card: Create a graphite product module with a `1px` cool border, `12px` radius, muted body text, tiny mono metadata label, and a subtle hover border shift.
+- Navigation: Create a `72px` transparent dark nav with compact muted links, pill CTAs, and hover states that brighten text without changing layout.
+- Button or badge: Create a `32px` high pill with `9999px` radius, `13px` text, dark graphite fill, hairline border, and `0.1s` hover transition.
+
+### Ready-to-Use Prompt
+
+Use the Linear landing page design language: dark-first `#08090A` canvas, Inter Variable typography, tight display tracking, cool gray text hierarchy, compact pill controls, hairline graphite borders, minimal shadows, and sparse periwinkle `#828FFF` accents. Structure the page as a serious product-system interface with workflow modules and real UI screenshots rather than decorative marketing sections.
+
+### Iteration Guide
+
+1. First remove visual noise: gradients, blobs, heavy shadows, oversized cards, and unnecessary copy.
+2. Then tune hierarchy: primary white for only the most important text, muted gray for most explanations.
+3. Finally refine interaction polish: faster transitions, clearer borders, compact pill actions, and consistent `8px` rhythm.
+
+## Optional Appendix: Interaction Patterns
+
+- Scroll: content reveals long product narrative sections rather than many small cards.
+- Hover: links and buttons brighten quickly; borders may become stronger.
+- Click: pill actions and feature links imply forward navigation, often with arrow copy.
+- Motion: crisp and subtle. Observed tokens include `0.1s`, `0.15s`, and `0.25s` transitions with quint/circ/quart easing curves.
+- Content voice: concise, confident, technical, and product-led. Headlines frame the product as an operating system rather than a simple tool.
+</pre>
+              <article class="rendered-view" id="previewView" hidden><section><h2>1. Visual Theme &amp; Atmosphere</h2><p>Linear presents itself as a high-precision product development system. The page feels quiet, technical, premium, and engineered rather than decorative. The dominant impression is a near-black workspace with luminous typography, thin structural lines, restrained violet-blue accents, and large product workflow modules.</p><ul><li>Overall feeling: dark-first, cinematic, exacting, confident.</li><li>Visual density: sparse at the hero, denser in workflow and product modules.</li><li>Brand posture: system-level tool for serious product teams and AI-era workflows.</li><li>Signature motifs: pill controls, hairline borders, muted gray copy, product screenshots, workflow stages, tiny metadata labels, subtle violet-blue action states.</li></ul><h3>Key Characteristics</h3><ul><li>Near-black background with surfaces separated by thin borders instead of heavy shadows.</li><li>Large, low-weight display typography with tight negative tracking.</li><li>Muted gray secondary text that carries much of the section hierarchy.</li><li>Violet-blue accents used sparingly for links, selected states, and brand emphasis.</li><li>Product UI screenshots and workflow panels treated as the main visual asset.</li><li>Minimal decoration; atmosphere comes from spacing, contrast, and precise component rhythm.</li></ul></section><section><h2>2. Color Palette &amp; Roles</h2><table><thead><tr><th>Role</th><th>Semantic Name</th><th>Value</th><th>Usage</th></tr></thead><tbody><tr><td>Page background</td><td>Marketing black</td><td><code>#08090A</code> / <code>#010102</code></td><td>Full-page canvas and footer background.</td></tr><tr><td>Primary surface</td><td>Panel black</td><td><code>#0F1011</code></td><td>Product panels, inset cards, dark containers.</td></tr><tr><td>Secondary surface</td><td>Raised graphite</td><td><code>#141516</code></td><td>Subtle module separation and tinted blocks.</td></tr><tr><td>Tertiary surface</td><td>Control graphite</td><td><code>#191A1B</code></td><td>Buttons, tabs, cards, screenshot shells.</td></tr><tr><td>Primary text</td><td>Frost white</td><td><code>#F7F8F8</code></td><td>Headlines, important labels, active items.</td></tr><tr><td>Secondary text</td><td>Cool silver</td><td><code>#D0D6E0</code></td><td>Supporting heading copy and emphasized body text.</td></tr><tr><td>Tertiary text</td><td>System gray</td><td><code>#8A8F98</code></td><td>Paragraphs, nav items, captions, inactive controls.</td></tr><tr><td>Quaternary text</td><td>Dim graphite</td><td><code>#62666D</code></td><td>Metadata, subdued labels, disabled states.</td></tr><tr><td>Primary border</td><td>Hairline graphite</td><td><code>#23252A</code></td><td>Component outlines and module dividers.</td></tr><tr><td>Secondary border</td><td>Structural graphite</td><td><code>#34343A</code></td><td>Stronger separators and hovered controls.</td></tr><tr><td>Translucent border</td><td>Soft white line</td><td><code>rgba(255,255,255,0.05)</code></td><td>Screenshot frames, subtle rings, overlays.</td></tr><tr><td>Accent</td><td>Linear indigo</td><td><code>#5E6AD2</code></td><td>Brand color and occasional filled emphasis.</td></tr><tr><td>Accent link</td><td>Electric periwinkle</td><td><code>#828FFF</code></td><td>Links, hover states, selected text, active indicators.</td></tr><tr><td>Accent tint</td><td>Deep indigo tint</td><td><code>#18182F</code></td><td>Low-contrast accent backgrounds.</td></tr><tr><td>Success</td><td>Product green</td><td><code>#27A644</code></td><td>Rare status indicators and positive signals.</td></tr></tbody></table><h3>Primary</h3><ul><li>Use <code>#08090A</code> as the default application background. It should feel black but not flat pure black.</li><li>Use <code>#F7F8F8</code> only for top-priority text and active states. Most copy should sit lower in the hierarchy.</li><li>Use <code>#828FFF</code> as a precise accent, not as a large decorative wash.</li></ul><h3>Interactive</h3><ul><li>Links default to <code>#828FFF</code> and can hover toward <code>#FFFFFF</code>.</li><li>Buttons are usually pill-shaped, compact, and low-contrast until hovered.</li><li>Active or selected states should use text brightness, border clarity, or a small accent fill instead of oversized color blocks.</li></ul><h3>Neutral Scale</h3><ul><li><code>#0F1011</code>, <code>#141516</code>, <code>#191A1B</code>, <code>#23252A</code>, <code>#34343A</code>, <code>#3E3E44</code> form the structural dark scale.</li><li>The page avoids warm grays. Neutrals lean cool and slightly blue.</li><li>Use borders and background shifts of only one or two neutral steps for depth.</li></ul><h3>Surface &amp; Overlay</h3><ul><li>Surfaces should be restrained: black panels, transparent overlays, hairline outlines.</li><li>Modal or overlay dimming can use <code>rgba(0,0,0,0.85)</code>.</li><li>Avoid glossy glassmorphism. Linear&#39;s depth language is flatter and more engineered.</li></ul><h3>Theme Modes</h3><p>The inspected public landing page is dark-first. No visible user-facing theme switch was observed during extraction. If adapting this system to light mode, treat light mode as an application-specific extension rather than an observed Linear rule.</p><p>#### Light Mode</p><ul><li>Background: use a cool off-white such as <code>#F7F8F8</code> only if the target product requires a light appearance.</li><li>Surface: use <code>#FFFFFF</code> with very light cool borders.</li><li>Text: invert the hierarchy into graphite text, preserving muted secondary tiers.</li><li>Accent: keep indigo/periwinkle as the stable brand accent.</li><li>Notes: inferred extension, not directly observed on the inspected landing page.</li></ul><p>#### Dark Mode</p><ul><li>Background: <code>#08090A</code> or <code>#010102</code>.</li><li>Surface: <code>#0F1011</code>, <code>#141516</code>, <code>#191A1B</code>.</li><li>Text: <code>#F7F8F8</code>, <code>#D0D6E0</code>, <code>#8A8F98</code>, <code>#62666D</code>.</li><li>Accent: <code>#828FFF</code>, <code>#5E6AD2</code>.</li><li>Notes: this is the observed default.</li></ul><h3>Shadows &amp; Depth</h3><ul><li>Prefer borders and surface changes over heavy shadow stacks.</li><li>Use translucent white outlines on screenshot-like panels.</li><li>Focus and hover states should feel crisp and immediate, not glowy.</li></ul></section><section><h2>3. Typography Rules</h2><h3>Font Family</h3><ul><li>Primary: <code>&quot;Inter Variable&quot;, &quot;SF Pro Display&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, Cantarell, &quot;Open Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif</code>.</li><li>Monospace: use a narrow technical mono such as <code>&quot;Berkeley Mono&quot;, &quot;SFMono-Regular&quot;, Consolas, monospace</code> for metadata, stage numbers, and code-like labels.</li><li>OpenType Features: use tight spacing and refined numerals where available; avoid decorative alternates.</li></ul><h3>Hierarchy</h3><table><thead><tr><th>Role</th><th>Font</th><th>Size</th><th>Weight</th><th>Line Height</th><th>Letter Spacing</th><th>Notes</th></tr></thead><tbody><tr><td>Hero headline desktop</td><td>Inter Variable</td><td><code>64px</code></td><td><code>510</code></td><td><code>64px</code></td><td><code>-1.4px</code></td><td>Centered or strongly anchored, compact and luminous.</td></tr><tr><td>Hero headline mobile</td><td>Inter Variable</td><td><code>38px</code></td><td><code>510</code></td><td><code>41.8px</code></td><td><code>-0.836px</code></td><td>Wraps into multiple short lines with generous top spacing.</td></tr><tr><td>Section statement desktop</td><td>Inter Variable</td><td><code>40px</code></td><td><code>510</code></td><td><code>44px</code></td><td><code>-0.88px</code></td><td>Often muted gray, used as narrative heading copy.</td></tr><tr><td>Section statement mobile</td><td>Inter Variable</td><td><code>24px</code></td><td><code>510</code></td><td><code>31.92px</code></td><td><code>-0.288px</code></td><td>Still prominent but more conversational.</td></tr><tr><td>Body</td><td>Inter Variable</td><td><code>15px</code></td><td><code>400</code></td><td><code>24px</code></td><td><code>-0.165px</code></td><td>Product copy and explanatory text.</td></tr><tr><td>Large body</td><td>Inter Variable</td><td><code>17px</code></td><td><code>400</code></td><td><code>27px</code></td><td>slight negative</td><td>Hero subcopy and important paragraphs.</td></tr><tr><td>Button / Nav</td><td>Inter Variable</td><td><code>13px</code></td><td><code>400-510</code></td><td><code>19.5px</code></td><td>slight negative</td><td>Compact, quiet, pill-based controls.</td></tr><tr><td>Meta / Eyebrow</td><td>Mono or Inter</td><td><code>10-12px</code></td><td><code>500-590</code></td><td><code>1.4-1.5</code></td><td><code>0</code> to slight positive</td><td>Stage labels, version numbers, small descriptors.</td></tr></tbody></table><h3>Principles</h3><ul><li>Display text should be large but not loud; weight stays around <code>510-590</code>.</li><li>Use muted gray headings for long narrative statements to avoid marketing heaviness.</li><li>Tight tracking is part of the identity. Do not use wide letter spacing except in tiny technical labels.</li><li>Keep body text compact and readable, usually near <code>15px / 24px</code>.</li></ul></section><section><h2>4. Component Stylings</h2><h3>Buttons and Links</h3><ul><li>Primary CTA: compact pill, <code>32px</code> height on desktop navigation, rounded <code>9999px</code>, light fill when inverted or subtle dark fill in context.</li><li>Secondary CTA: transparent or dark graphite pill with hairline border, muted text, stronger border on hover.</li><li>Text links: periwinkle <code>#828FFF</code>; arrow symbols are common for forward motion.</li><li>Hover and active feel: very fast, precise, often a border or text color change in <code>0.1s-0.15s</code>.</li></ul><h3>Cards and Containers</h3><ul><li>Surface style: dark graphite surfaces on black, usually one neutral step above the page.</li><li>Radius: <code>8px</code> and <code>12px</code> are standard; <code>16px</code> and above are reserved for larger screenshot shells or major modules.</li><li>Border: <code>1px solid #23252A</code> or translucent white for image/product frames.</li><li>Shadow or elevation: minimal. Use layered borders and slight background shifts instead.</li><li>Internal spacing: compact for controls, expansive for hero and feature sections.</li></ul><h3>Inputs and Interactive Controls</h3><ul><li>Input treatment: dark surface, subtle border, compact label, muted placeholder.</li><li>Focus behavior: border shifts toward accent or brighter gray; avoid thick outlines.</li><li>Selection states: use pill tabs, small active indicators, or accent text.</li></ul><h3>Navigation</h3><ul><li>Structure: desktop navigation spans about <code>72px</code> high; mobile is closer to <code>64px</code>.</li><li>Background treatment: transparent over the same dark canvas, no heavy app bar.</li><li>Link style: compact muted text, hover brightens toward primary white.</li><li>Sticky or scroll behavior: navigation is visually persistent in spirit, but the observed mobile snapshot used a simple top bar with hidden desktop links and visible login/signup actions.</li></ul><h3>Image Treatment</h3><ul><li>Screenshot treatment: product UI screenshots are the hero visual asset; frame them with thin lines, dark shells, and measured radius.</li><li>Photography or illustration style: avoid generic photos and decorative illustrations. Use actual product states, workflow panels, and interface fragments.</li><li>Border and radius treatment: subtle <code>8px-16px</code> radius, <code>rgba(255,255,255,0.05)</code> border, no thick drop shadows.</li></ul><h3>Distinctive Components</h3><ul><li>Workflow stage modules: numbered sequence sections like <code>1.0 Intake</code>, <code>2.0 Plan</code>, <code>3.0 Build</code>, <code>4.0 Diffs</code>, <code>5.0 Monitor</code>.</li><li>Pill navigation and pill CTAs: small, calm controls with high polish.</li><li>Product narrative bands: large muted headings that read like product philosophy rather than sales slogans.</li><li>Customer quote rows: short, high-signal quotes from recognizable teams, kept visually quiet.</li><li>Final CTA: direct, confident, minimal; no oversized marketing clutter.</li></ul></section><section><h2>5. Layout Principles</h2><h3>Spacing System</h3><ul><li>Base unit: <code>8px</code>.</li><li>Repeated spacing values: <code>16px</code>, <code>24px</code>, <code>32px</code>, <code>48px</code>, <code>64px</code>, <code>96px</code>, <code>128px</code>.</li><li>Mobile section spacing compresses but remains airy; avoid stacking cards too tightly.</li></ul><h3>Grid &amp; Container</h3><ul><li>Grid logic: wide centered content with constrained inner reading widths.</li><li>Max content width: large homepage containers can approach <code>1280px-1344px</code>, with small side insets.</li><li>Section spacing: large vertical bands; product modules appear as full-width narrative blocks rather than isolated floating cards.</li></ul><h3>Whitespace Philosophy</h3><ul><li>Whitespace is structural and cinematic, especially around the hero.</li><li>Alignment tends to be centered for hero messaging and grid-based for product modules.</li><li>Long text blocks should be kept narrow enough for scanning, while product visuals can span wide.</li></ul><h3>Border Radius Scale</h3><ul><li>Micro: <code>4px</code> for tiny badges or internal UI details.</li><li>Standard: <code>8px</code> for controls and small panels.</li><li>Large: <code>12px-16px</code> for cards and product screenshots.</li><li>XL: <code>24px-32px</code> only for major containers when the layout needs a softer shell.</li><li>Pill: <code>9999px</code> for buttons, nav chips, and compact CTAs.</li></ul></section><section><h2>6. Depth &amp; Elevation</h2><table><thead><tr><th>Level</th><th>Treatment</th><th>Use</th></tr></thead><tbody><tr><td>Flat</td><td><code>#08090A</code> canvas, no border</td><td>Page background and full-width bands.</td></tr><tr><td>Ring</td><td><code>1px solid #23252A</code> or translucent white</td><td>Buttons, cards, screenshot frames, dividers.</td></tr><tr><td>Card</td><td><code>#0F1011</code> or <code>#141516</code> with hairline border</td><td>Workflow panels and product modules.</td></tr><tr><td>Focus</td><td>Accent-tinted border or brighter text</td><td>Keyboard focus, selected tabs, active controls.</td></tr></tbody></table><h3>Depth Principles</h3><ul><li>Surface hierarchy should be almost imperceptible until content or interaction clarifies it.</li><li>Shadows are not a primary motif; avoid soft floating SaaS card stacks.</li><li>Blur and glass should be rare. If used, keep it black and functional.</li><li>Depth exists to clarify product screenshots, not to decorate the page.</li></ul></section><section><h2>7. Do&#39;s and Don&#39;ts</h2><h3>Do</h3><ul><li>Use near-black backgrounds with cool gray type hierarchy.</li><li>Use product screenshots, workflow diagrams, and interface fragments as primary visuals.</li><li>Keep buttons compact, pill-shaped, and restrained.</li><li>Make borders thin and purposeful.</li><li>Use periwinkle accent sparingly to signal action or selection.</li><li>Let large typography and spacing carry the premium feeling.</li></ul><h3>Don&#39;t</h3><ul><li>Do not use bright gradients, blobs, bokeh, or decorative abstract art.</li><li>Do not make heavy rounded marketing cards or nested card stacks.</li><li>Do not overuse the accent color across large backgrounds.</li><li>Do not use warm beige, tan, or overly saturated palettes.</li><li>Do not make UI copy playful or casual; keep it direct and product-focused.</li><li>Do not rely on large drop shadows for depth.</li></ul></section><section><h2>8. Responsive Behavior</h2><h3>Breakpoints</h3><table><thead><tr><th>Name</th><th>Width</th><th>Key Changes</th></tr></thead><tbody><tr><td>Mobile</td><td><code>&lt;= 640px</code></td><td>Hero title reduces to about <code>38px</code>; nav links collapse; sections become single-column with <code>16px-24px</code> side padding.</td></tr><tr><td>Tablet</td><td><code>&lt;= 768px</code></td><td>Section headings reduce, product modules stack, text widths tighten.</td></tr><tr><td>Laptop</td><td><code>&lt;= 1024px</code></td><td>Hero title moves from largest display scale to <code>56px</code>-like scale; content density decreases.</td></tr><tr><td>Desktop</td><td><code>&gt;= 1280px</code></td><td>Wide product panels, full navigation, large narrative headings, broad screenshot areas.</td></tr></tbody></table><h3>Touch Targets</h3><ul><li>Keep tappable pills at least <code>32px</code> high; larger touch areas can be invisible around compact labels.</li><li>Preserve spacing between interactive pills so the interface remains calm on mobile.</li></ul><h3>Collapsing Strategy</h3><ul><li>Desktop behavior: full nav, large hero, wide product-system visuals, multi-column proof sections.</li><li>Tablet behavior: reduce title scale, stack dense modules, keep generous section rhythm.</li><li>Mobile behavior: single-column page, hidden desktop nav links, compact top actions, hero centered with large top breathing room.</li><li>Breakpoint-driven component changes: title scales from <code>64px</code> to <code>38px</code>; section statements from <code>40px</code> to <code>24px</code>.</li><li>Touch target and spacing adjustments: avoid cramped nav rows; prefer fewer visible actions.</li></ul></section><section><h2>9. Agent Prompt Guide</h2><h3>Quick Color Reference</h3><ul><li>Primary CTA: <code>#E5E5E6</code> fill with dark text for inverted CTA, or dark pill with <code>#23252A</code> border.</li><li>Background: <code>#08090A</code>.</li><li>Heading text: <code>#F7F8F8</code>.</li><li>Body text: <code>#8A8F98</code>.</li><li>Border or ring: <code>#23252A</code> / <code>rgba(255,255,255,0.05)</code>.</li><li>Accent: <code>#828FFF</code>.</li></ul><h3>Quick Summary</h3><p>Build a dark-first, precise B2B product interface inspired by Linear&#39;s landing page. Use near-black backgrounds, cool gray hierarchy, compact pill controls, hairline borders, and sparse periwinkle accents. Let product screenshots and workflow modules do the visual work. Keep typography large but restrained, with tight tracking and modest weights. Avoid decorative gradients, oversized marketing cards, and loud color blocks.</p><h3>Example Component Prompts</h3><ul><li>Hero: Create a centered dark hero with a <code>64px</code> desktop headline, <code>17px</code> muted subcopy, compact pill CTA row, and a framed product screenshot below.</li><li>Card: Create a graphite product module with a <code>1px</code> cool border, <code>12px</code> radius, muted body text, tiny mono metadata label, and a subtle hover border shift.</li><li>Navigation: Create a <code>72px</code> transparent dark nav with compact muted links, pill CTAs, and hover states that brighten text without changing layout.</li><li>Button or badge: Create a <code>32px</code> high pill with <code>9999px</code> radius, <code>13px</code> text, dark graphite fill, hairline border, and <code>0.1s</code> hover transition.</li></ul><h3>Ready-to-Use Prompt</h3><p>Use the Linear landing page design language: dark-first <code>#08090A</code> canvas, Inter Variable typography, tight display tracking, cool gray text hierarchy, compact pill controls, hairline graphite borders, minimal shadows, and sparse periwinkle <code>#828FFF</code> accents. Structure the page as a serious product-system interface with workflow modules and real UI screenshots rather than decorative marketing sections.</p><h3>Iteration Guide</h3><ol><li>First remove visual noise: gradients, blobs, heavy shadows, oversized cards, and unnecessary copy.</li><li>Then tune hierarchy: primary white for only the most important text, muted gray for most explanations.</li><li>Finally refine interaction polish: faster transitions, clearer borders, compact pill actions, and consistent <code>8px</code> rhythm.</li></ol></section><section><h2>Optional Appendix: Interaction Patterns</h2><ul><li>Scroll: content reveals long product narrative sections rather than many small cards.</li><li>Hover: links and buttons brighten quickly; borders may become stronger.</li><li>Click: pill actions and feature links imply forward navigation, often with arrow copy.</li><li>Motion: crisp and subtle. Observed tokens include <code>0.1s</code>, <code>0.15s</code>, and <code>0.25s</code> transitions with quint/circ/quart easing curves.</li><li>Content voice: concise, confident, technical, and product-led. Headlines frame the product as an operating system rather than a simple tool.</li></ul></section></article>
+            </div>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const sourceView = document.getElementById("sourceView");
+      const previewView = document.getElementById("previewView");
+      const copyButton = document.getElementById("copyButton");
+      const copyState = document.getElementById("copyState");
+      const viewButtons = document.querySelectorAll("[data-view]");
+
+      function setActiveView(view) {
+        const showSource = view === "source";
+        sourceView.hidden = !showSource;
+        previewView.hidden = showSource;
+        viewButtons.forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.view === view);
+        });
+      }
+
+      viewButtons.forEach((button) => {
+        button.addEventListener("click", () => setActiveView(button.dataset.view));
+      });
+
+      copyButton.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(sourceView.textContent || "");
+          copyState.textContent = "Copied";
+        } catch (error) {
+          copyState.textContent = "Clipboard unavailable";
+        }
+
+        setTimeout(() => {
+          copyState.textContent = "";
+        }, 1400);
+      });
+    </script>
+  </body>
+</html>
