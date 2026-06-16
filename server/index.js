@@ -143,30 +143,41 @@ app.post("/api/test-model", async (req, res) => {
 
   try {
     const startedAt = Date.now();
-    const messages = buildModelTestMessages(req.body);
-    const { json, downgraded } = await callModelJsonWithImageFallback(modelConfig, messages);
+    const textJson = await callModelJson(modelConfig, buildModelTestMessages({ scenario: "ping" }));
 
-    if (json?.ok !== true) {
+    if (textJson?.ok !== true) {
       return res.status(502).json({
         error: "模型连接测试失败",
-        details: "模型已响应，但未返回预期的 JSON 结构，请确认该模型支持 Chat Completions、JSON 输出，以及当前测试场景需要的视觉输入。"
+        details: "模型已响应，但未返回预期的 JSON 结构，请确认该模型支持 Chat Completions 和 JSON 输出。"
       });
+    }
+
+    const messages = buildModelTestMessages(req.body);
+    let visionAvailable = !messagesContainImages(messages);
+    let warning = "";
+    if (!visionAvailable) {
+      try {
+        const visionJson = await callModelJson(modelConfig, messages);
+        visionAvailable = visionJson?.ok === true;
+      } catch (error) {
+        warning = `文本生成链路可响应，但图片输入能力未通过测试：${error.message}`;
+      }
     }
 
     res.json({
       ok: true,
       modelConfigured: true,
-      visionAvailable: !downgraded,
-      status: downgraded ? "limited" : "ready",
+      visionAvailable,
+      status: visionAvailable ? "ready" : "limited",
       baseUrl: modelConfig.baseUrl,
       model: modelConfig.model,
       source: modelConfig.fromHeaders ? "browser" : "environment",
       elapsedMs: Date.now() - startedAt,
-      warning: downgraded
-        ? "当前模型接口可以生成文本报告，但不支持 image_url 图片输入；功能画像会降级为纯文本，无法可靠分析截图视觉细节。"
+      warning: warning
+        ? `${warning}。当前模型接口仍可生成文本报告；如需可靠分析截图视觉细节，请切换支持 image_url 的视觉模型。`
         : "",
-      message: downgraded
-        ? "文本生成链路可响应，但图片输入能力未通过测试。请切换支持视觉输入的模型后再生成截图画像。"
+      message: warning
+        ? "文本生成链路可响应，图片输入能力受限。"
         : `模型文本与图片输入能力均可响应，当前测试耗时 ${Math.round((Date.now() - startedAt) / 1000)} 秒；复杂生成仍可能因图片数量、上下文长度或网关负载而超时。`
     });
   } catch (error) {
@@ -376,11 +387,18 @@ if (process.env.VERCEL !== "1") {
 
 export default app;
 
-async function callModelJson(modelConfig, messages) {
+async function callModelJson(modelConfig, messages, options = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 55000);
   let completion;
   try {
+    const payload = {
+      model: modelConfig.model,
+      temperature: 0.2,
+      messages
+    };
+    if (!options.omitResponseFormat) payload.response_format = { type: "json_object" };
+
     completion = await fetch(`${modelConfig.baseUrl.replace(/\/$/, "")}/chat/completions`, {
       method: "POST",
       signal: controller.signal,
@@ -388,12 +406,7 @@ async function callModelJson(modelConfig, messages) {
         "Authorization": `Bearer ${modelConfig.apiKey}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: modelConfig.model,
-        temperature: 0.2,
-        response_format: { type: "json_object" },
-        messages
-      })
+      body: JSON.stringify(payload)
     });
   } catch (error) {
     if (error.name === "AbortError") throw new Error("模型接口响应超时，请稍后重试或切换模型。");
@@ -404,6 +417,9 @@ async function callModelJson(modelConfig, messages) {
 
   if (!completion.ok) {
     const text = await completion.text();
+    if (!options.omitResponseFormat && isResponseFormatUnsupportedError(text)) {
+      return callModelJson(modelConfig, messages, { omitResponseFormat: true });
+    }
     throw new Error(readableModelApiError(text));
   }
 
@@ -440,7 +456,12 @@ function stripImageMessages(messages) {
 
 function isImageUnsupportedError(error) {
   const message = String(error?.message || "");
-  return message.includes("不支持图片输入") || message.includes("unknown variant `image_url`") || message.includes("expected `text`");
+  return message.includes("不支持图片输入")
+    || message.includes("image_url")
+    || message.includes("unknown variant")
+    || message.includes("expected `text`")
+    || message.includes("multi-modal")
+    || message.includes("vision");
 }
 
 function readableModelApiError(text = "") {
@@ -448,6 +469,17 @@ function readableModelApiError(text = "") {
     return "当前模型接口不支持图片输入 image_url。系统会在可降级的场景自动改用纯文本；如需分析截图视觉细节，请切换支持视觉输入的模型。";
   }
   return `模型接口调用失败：${text.slice(0, 1200)}`;
+}
+
+function isResponseFormatUnsupportedError(text = "") {
+  const message = String(text).toLowerCase();
+  return message.includes("response_format")
+    && (message.includes("unsupported")
+      || message.includes("not support")
+      || message.includes("invalid")
+      || message.includes("unrecognized")
+      || message.includes("extra_forbidden")
+      || message.includes("json_object"));
 }
 
 function readableNetworkError(error, baseUrl = "") {
