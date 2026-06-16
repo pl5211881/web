@@ -3169,6 +3169,35 @@ tbody td,
   width: 40px;
   height: 40px;
   line-height: 1;
+  color: transparent;
+  font-size: 0;
+  overflow: hidden;
+}
+
+.modal-close::before,
+.modal-close::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 3px;
+  border-radius: 999px;
+  background: #ffffff;
+  transform-origin: center;
+}
+
+.modal-close::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.modal-close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.modal-close:hover::before,
+.modal-close:hover::after {
+  background: #00BCBC;
 }
 
 .image-preview-close {
