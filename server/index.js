@@ -397,7 +397,7 @@ async function callModelJson(modelConfig, messages) {
     });
   } catch (error) {
     if (error.name === "AbortError") throw new Error("模型接口响应超时，请稍后重试或切换模型。");
-    throw error;
+    throw new Error(readableNetworkError(error, modelConfig.baseUrl));
   } finally {
     clearTimeout(timeout);
   }
@@ -448,6 +448,14 @@ function readableModelApiError(text = "") {
     return "当前模型接口不支持图片输入 image_url。系统会在可降级的场景自动改用纯文本；如需分析截图视觉细节，请切换支持视觉输入的模型。";
   }
   return `模型接口调用失败：${text.slice(0, 1200)}`;
+}
+
+function readableNetworkError(error, baseUrl = "") {
+  const message = String(error?.message || error || "");
+  if (message.includes("fetch failed")) {
+    return `模型服务网络连接失败：当前部署环境无法访问 ${baseUrl}。如果这是企业内网、VPN、专线或白名单网关，Vercel 线上环境通常无法直连；请改用公网可访问的 OpenAI 兼容网关，或把应用部署到能访问该网关的内网环境。`;
+  }
+  return message || "模型服务网络连接失败，请检查 Base URL 是否公网可访问。";
 }
 
 function getModelConfig(req) {
