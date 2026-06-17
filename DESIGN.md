@@ -1,293 +1,263 @@
-# Design System: Linear Landing Page
+# DESIGN.md
 
-Source: https://linear.app/?ref=land-book.com
+本文件用于约束“UX 竞品深度分析”工具的后续设计和前端实现。当前项目是面向 B 端分析场景的暗色工作台，不是营销页；任何改动都应优先保证信息密度、清晰层级、稳定布局和可操作性。
 
-This document distills the observed Linear landing page into a reusable design system. It is not a pixel clone. Use it to reproduce the same dark, precise, product-system feeling in another interface.
+## 1. 视觉风格定位
 
-## 1. Visual Theme & Atmosphere
+### 产品气质
 
-Linear presents itself as a high-precision product development system. The page feels quiet, technical, premium, and engineered rather than decorative. The dominant impression is a near-black workspace with luminous typography, thin structural lines, restrained violet-blue accents, and large product workflow modules.
+- 类型：B 端工作台 / 研究分析控制台。
+- 关键词：暗色、专业、克制、高对比、数据感、工具感。
+- 第一屏目标：让用户直接进入“上传产品截图 - 选择 UX 纬度 - 输出报告”的工作流程。
+- 视觉重心：侧边导航、模型配置入口、产品上传卡片、UX 纬度模块、结构化报告。
 
-- Overall feeling: dark-first, cinematic, exacting, confident.
-- Visual density: sparse at the hero, denser in workflow and product modules.
-- Brand posture: system-level tool for serious product teams and AI-era workflows.
-- Signature motifs: pill controls, hairline borders, muted gray copy, product screenshots, workflow stages, tiny metadata labels, subtle violet-blue action states.
+### 设计原则
 
-### Key Characteristics
+- 不做营销式大 Hero，不使用装饰性插画或大面积渐变卡片。
+- 页面应像一个可长时间工作的分析台：背景沉稳，内容卡片清晰，按钮反馈明确。
+- 青色 `#00BCBC` 是唯一主强调色，用于品牌、主要按钮、选中态、hover、状态点和重点数据。
+- 卡片、表格、上传区、弹层都应保持统一暗色体系和清晰边界。
 
-- Near-black background with surfaces separated by thin borders instead of heavy shadows.
-- Large, low-weight display typography with tight negative tracking.
-- Muted gray secondary text that carries much of the section hierarchy.
-- Violet-blue accents used sparingly for links, selected states, and brand emphasis.
-- Product UI screenshots and workflow panels treated as the main visual asset.
-- Minimal decoration; atmosphere comes from spacing, contrast, and precise component rhythm.
+## 2. 色彩规范
 
-## 2. Color Palette & Roles
+### 基础色
 
-| Role | Semantic Name | Value | Usage |
-| --- | --- | --- | --- |
-| Page background | Marketing black | `#08090A` / `#010102` | Full-page canvas and footer background. |
-| Primary surface | Panel black | `#0F1011` | Product panels, inset cards, dark containers. |
-| Secondary surface | Raised graphite | `#141516` | Subtle module separation and tinted blocks. |
-| Tertiary surface | Control graphite | `#191A1B` | Buttons, tabs, cards, screenshot shells. |
-| Primary text | Frost white | `#F7F8F8` | Headlines, important labels, active items. |
-| Secondary text | Cool silver | `#D0D6E0` | Supporting heading copy and emphasized body text. |
-| Tertiary text | System gray | `#8A8F98` | Paragraphs, nav items, captions, inactive controls. |
-| Quaternary text | Dim graphite | `#62666D` | Metadata, subdued labels, disabled states. |
-| Primary border | Hairline graphite | `#23252A` | Component outlines and module dividers. |
-| Secondary border | Structural graphite | `#34343A` | Stronger separators and hovered controls. |
-| Translucent border | Soft white line | `rgba(255,255,255,0.05)` | Screenshot frames, subtle rings, overlays. |
-| Accent | Linear indigo | `#5E6AD2` | Brand color and occasional filled emphasis. |
-| Accent link | Electric periwinkle | `#828FFF` | Links, hover states, selected text, active indicators. |
-| Accent tint | Deep indigo tint | `#18182F` | Low-contrast accent backgrounds. |
-| Success | Product green | `#27A644` | Rare status indicators and positive signals. |
-
-### Primary
-
-- Use `#08090A` as the default application background. It should feel black but not flat pure black.
-- Use `#F7F8F8` only for top-priority text and active states. Most copy should sit lower in the hierarchy.
-- Use `#828FFF` as a precise accent, not as a large decorative wash.
-
-### Interactive
-
-- Links default to `#828FFF` and can hover toward `#FFFFFF`.
-- Buttons are usually pill-shaped, compact, and low-contrast until hovered.
-- Active or selected states should use text brightness, border clarity, or a small accent fill instead of oversized color blocks.
-
-### Neutral Scale
-
-- `#0F1011`, `#141516`, `#191A1B`, `#23252A`, `#34343A`, `#3E3E44` form the structural dark scale.
-- The page avoids warm grays. Neutrals lean cool and slightly blue.
-- Use borders and background shifts of only one or two neutral steps for depth.
-
-### Surface & Overlay
-
-- Surfaces should be restrained: black panels, transparent overlays, hairline outlines.
-- Modal or overlay dimming can use `rgba(0,0,0,0.85)`.
-- Avoid glossy glassmorphism. Linear's depth language is flatter and more engineered.
-
-### Theme Modes
-
-The inspected public landing page is dark-first. No visible user-facing theme switch was observed during extraction. If adapting this system to light mode, treat light mode as an application-specific extension rather than an observed Linear rule.
-
-#### Light Mode
-
-- Background: use a cool off-white such as `#F7F8F8` only if the target product requires a light appearance.
-- Surface: use `#FFFFFF` with very light cool borders.
-- Text: invert the hierarchy into graphite text, preserving muted secondary tiers.
-- Accent: keep indigo/periwinkle as the stable brand accent.
-- Notes: inferred extension, not directly observed on the inspected landing page.
-
-#### Dark Mode
-
-- Background: `#08090A` or `#010102`.
-- Surface: `#0F1011`, `#141516`, `#191A1B`.
-- Text: `#F7F8F8`, `#D0D6E0`, `#8A8F98`, `#62666D`.
-- Accent: `#828FFF`, `#5E6AD2`.
-- Notes: this is the observed default.
-
-### Shadows & Depth
-
-- Prefer borders and surface changes over heavy shadow stacks.
-- Use translucent white outlines on screenshot-like panels.
-- Focus and hover states should feel crisp and immediate, not glowy.
-
-## 3. Typography Rules
-
-### Font Family
-
-- Primary: `"Inter Variable", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif`.
-- Monospace: use a narrow technical mono such as `"Berkeley Mono", "SFMono-Regular", Consolas, monospace` for metadata, stage numbers, and code-like labels.
-- OpenType Features: use tight spacing and refined numerals where available; avoid decorative alternates.
-
-### Hierarchy
-
-| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| Hero headline desktop | Inter Variable | `64px` | `510` | `64px` | `-1.4px` | Centered or strongly anchored, compact and luminous. |
-| Hero headline mobile | Inter Variable | `38px` | `510` | `41.8px` | `-0.836px` | Wraps into multiple short lines with generous top spacing. |
-| Section statement desktop | Inter Variable | `40px` | `510` | `44px` | `-0.88px` | Often muted gray, used as narrative heading copy. |
-| Section statement mobile | Inter Variable | `24px` | `510` | `31.92px` | `-0.288px` | Still prominent but more conversational. |
-| Body | Inter Variable | `15px` | `400` | `24px` | `-0.165px` | Product copy and explanatory text. |
-| Large body | Inter Variable | `17px` | `400` | `27px` | slight negative | Hero subcopy and important paragraphs. |
-| Button / Nav | Inter Variable | `13px` | `400-510` | `19.5px` | slight negative | Compact, quiet, pill-based controls. |
-| Meta / Eyebrow | Mono or Inter | `10-12px` | `500-590` | `1.4-1.5` | `0` to slight positive | Stage labels, version numbers, small descriptors. |
-
-### Principles
-
-- Display text should be large but not loud; weight stays around `510-590`.
-- Use muted gray headings for long narrative statements to avoid marketing heaviness.
-- Tight tracking is part of the identity. Do not use wide letter spacing except in tiny technical labels.
-- Keep body text compact and readable, usually near `15px / 24px`.
-
-## 4. Component Stylings
-
-### Buttons and Links
-
-- Primary CTA: compact pill, `32px` height on desktop navigation, rounded `9999px`, light fill when inverted or subtle dark fill in context.
-- Secondary CTA: transparent or dark graphite pill with hairline border, muted text, stronger border on hover.
-- Text links: periwinkle `#828FFF`; arrow symbols are common for forward motion.
-- Hover and active feel: very fast, precise, often a border or text color change in `0.1s-0.15s`.
-
-### Cards and Containers
-
-- Surface style: dark graphite surfaces on black, usually one neutral step above the page.
-- Radius: `8px` and `12px` are standard; `16px` and above are reserved for larger screenshot shells or major modules.
-- Border: `1px solid #23252A` or translucent white for image/product frames.
-- Shadow or elevation: minimal. Use layered borders and slight background shifts instead.
-- Internal spacing: compact for controls, expansive for hero and feature sections.
-
-### Inputs and Interactive Controls
-
-- Input treatment: dark surface, subtle border, compact label, muted placeholder.
-- Focus behavior: border shifts toward accent or brighter gray; avoid thick outlines.
-- Selection states: use pill tabs, small active indicators, or accent text.
-
-### Navigation
-
-- Structure: desktop navigation spans about `72px` high; mobile is closer to `64px`.
-- Background treatment: transparent over the same dark canvas, no heavy app bar.
-- Link style: compact muted text, hover brightens toward primary white.
-- Sticky or scroll behavior: navigation is visually persistent in spirit, but the observed mobile snapshot used a simple top bar with hidden desktop links and visible login/signup actions.
-
-### Image Treatment
-
-- Screenshot treatment: product UI screenshots are the hero visual asset; frame them with thin lines, dark shells, and measured radius.
-- Photography or illustration style: avoid generic photos and decorative illustrations. Use actual product states, workflow panels, and interface fragments.
-- Border and radius treatment: subtle `8px-16px` radius, `rgba(255,255,255,0.05)` border, no thick drop shadows.
-
-### Distinctive Components
-
-- Workflow stage modules: numbered sequence sections like `1.0 Intake`, `2.0 Plan`, `3.0 Build`, `4.0 Diffs`, `5.0 Monitor`.
-- Pill navigation and pill CTAs: small, calm controls with high polish.
-- Product narrative bands: large muted headings that read like product philosophy rather than sales slogans.
-- Customer quote rows: short, high-signal quotes from recognizable teams, kept visually quiet.
-- Final CTA: direct, confident, minimal; no oversized marketing clutter.
-
-## 5. Layout Principles
-
-### Spacing System
-
-- Base unit: `8px`.
-- Repeated spacing values: `16px`, `24px`, `32px`, `48px`, `64px`, `96px`, `128px`.
-- Mobile section spacing compresses but remains airy; avoid stacking cards too tightly.
-
-### Grid & Container
-
-- Grid logic: wide centered content with constrained inner reading widths.
-- Max content width: large homepage containers can approach `1280px-1344px`, with small side insets.
-- Section spacing: large vertical bands; product modules appear as full-width narrative blocks rather than isolated floating cards.
-
-### Whitespace Philosophy
-
-- Whitespace is structural and cinematic, especially around the hero.
-- Alignment tends to be centered for hero messaging and grid-based for product modules.
-- Long text blocks should be kept narrow enough for scanning, while product visuals can span wide.
-
-### Border Radius Scale
-
-- Micro: `4px` for tiny badges or internal UI details.
-- Standard: `8px` for controls and small panels.
-- Large: `12px-16px` for cards and product screenshots.
-- XL: `24px-32px` only for major containers when the layout needs a softer shell.
-- Pill: `9999px` for buttons, nav chips, and compact CTAs.
-
-## 6. Depth & Elevation
-
-| Level | Treatment | Use |
+| 用途 | 颜色 | 说明 |
 | --- | --- | --- |
-| Flat | `#08090A` canvas, no border | Page background and full-width bands. |
-| Ring | `1px solid #23252A` or translucent white | Buttons, cards, screenshot frames, dividers. |
-| Card | `#0F1011` or `#141516` with hairline border | Workflow panels and product modules. |
-| Focus | Accent-tinted border or brighter text | Keyboard focus, selected tabs, active controls. |
+| 页面背景 | `#1a1a1a` | 全局暗色画布。 |
+| 工作区背景 | `#1a1a1a` | 主内容区背景，可带极弱青色氛围。 |
+| 侧边栏背景 | `#262626` 到 `#1a1a1a` | 暗色渐变，保持固定导航区域的重量。 |
+| 卡片背景 | `#262626` | 面板、产品卡片、报告卡片。 |
+| 次级卡片背景 | `#1b1b1b` | 上传格、表格容器、内嵌区域。 |
+| 悬浮背景 | `#333333` / `#262626` | hover 或更高层级表面。 |
 
-### Depth Principles
+### 文本色
 
-- Surface hierarchy should be almost imperceptible until content or interaction clarifies it.
-- Shadows are not a primary motif; avoid soft floating SaaS card stacks.
-- Blur and glass should be rare. If used, keep it black and functional.
-- Depth exists to clarify product screenshots, not to decorate the page.
-
-## 7. Do's and Don'ts
-
-### Do
-
-- Use near-black backgrounds with cool gray type hierarchy.
-- Use product screenshots, workflow diagrams, and interface fragments as primary visuals.
-- Keep buttons compact, pill-shaped, and restrained.
-- Make borders thin and purposeful.
-- Use periwinkle accent sparingly to signal action or selection.
-- Let large typography and spacing carry the premium feeling.
-
-### Don't
-
-- Do not use bright gradients, blobs, bokeh, or decorative abstract art.
-- Do not make heavy rounded marketing cards or nested card stacks.
-- Do not overuse the accent color across large backgrounds.
-- Do not use warm beige, tan, or overly saturated palettes.
-- Do not make UI copy playful or casual; keep it direct and product-focused.
-- Do not rely on large drop shadows for depth.
-
-## 8. Responsive Behavior
-
-### Breakpoints
-
-| Name | Width | Key Changes |
+| 用途 | 颜色 | 说明 |
 | --- | --- | --- |
-| Mobile | `<= 640px` | Hero title reduces to about `38px`; nav links collapse; sections become single-column with `16px-24px` side padding. |
-| Tablet | `<= 768px` | Section headings reduce, product modules stack, text widths tighten. |
-| Laptop | `<= 1024px` | Hero title moves from largest display scale to `56px`-like scale; content density decreases. |
-| Desktop | `>= 1280px` | Wide product panels, full navigation, large narrative headings, broad screenshot areas. |
+| 主文本 | `#ffffff` | 标题、按钮文字、重要字段。 |
+| 次级文本 | `#c3c4c8` | 描述、说明、报告正文。 |
+| 弱提示 | `#777777` | placeholder、低优先级提示。 |
+| 禁用态 | `rgba(255,255,255,0.45)` | 禁用按钮或不可用信息。 |
 
-### Touch Targets
+### 品牌与状态色
 
-- Keep tappable pills at least `32px` high; larger touch areas can be invisible around compact labels.
-- Preserve spacing between interactive pills so the interface remains calm on mobile.
+| 用途 | 颜色 | 说明 |
+| --- | --- | --- |
+| 主色 | `#00BCBC` | 品牌、主按钮、选中态、强调数据。 |
+| 主色 hover | `#20DADA` | 主按钮 hover。 |
+| 主色描边 | `rgba(0,188,188,0.34)` 到 `rgba(0,188,188,0.78)` | 卡片 hover、上传入口、配置入口。 |
+| 成功 | `#27a644` | 可用状态。 |
+| 警告 | `#b98b30` | 模型或配置受限。 |
+| 错误 | `#ef4444` | 报错、失败状态。 |
 
-### Collapsing Strategy
+### 边框和阴影
 
-- Desktop behavior: full nav, large hero, wide product-system visuals, multi-column proof sections.
-- Tablet behavior: reduce title scale, stack dense modules, keep generous section rhythm.
-- Mobile behavior: single-column page, hidden desktop nav links, compact top actions, hero centered with large top breathing room.
-- Breakpoint-driven component changes: title scales from `64px` to `38px`; section statements from `40px` to `24px`.
-- Touch target and spacing adjustments: avoid cramped nav rows; prefer fewer visible actions.
+- 默认边框：`1px solid rgba(255,255,255,0.14)`。
+- 强调边框：`1px solid rgba(0,188,188,0.34)`。
+- hover 边框：`rgba(0,188,188,0.32)` 到 `rgba(0,188,188,0.78)`。
+- 阴影应克制：常用 `0 22px 58px rgba(0,0,0,0.24)`。
+- 不使用高饱和多色渐变；青色只做轻微光晕和状态强调。
 
-## 9. Agent Prompt Guide
+## 3. 排版规范
 
-### Quick Color Reference
+### 字体
 
-- Primary CTA: `#E5E5E6` fill with dark text for inverted CTA, or dark pill with `#23252A` border.
-- Background: `#08090A`.
-- Heading text: `#F7F8F8`.
-- Body text: `#8A8F98`.
-- Border or ring: `#23252A` / `rgba(255,255,255,0.05)`.
-- Accent: `#828FFF`.
+```css
+font-family: "qount.io--Inter", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+```
 
-### Quick Summary
+### 字重
 
-Build a dark-first, precise B2B product interface inspired by Linear's landing page. Use near-black backgrounds, cool gray hierarchy, compact pill controls, hairline borders, and sparse periwinkle accents. Let product screenshots and workflow modules do the visual work. Keep typography large but restrained, with tight tracking and modest weights. Avoid decorative gradients, oversized marketing cards, and loud color blocks.
+- 页面主标题：`700`。
+- 面板标题、卡片标题、按钮：`700` 到 `800`。
+- 正文和说明：`400` 到 `500`。
+- 数据、标签、状态：`700` 到 `900`。
 
-### Example Component Prompts
+### 字号层级
 
-- Hero: Create a centered dark hero with a `64px` desktop headline, `17px` muted subcopy, compact pill CTA row, and a framed product screenshot below.
-- Card: Create a graphite product module with a `1px` cool border, `12px` radius, muted body text, tiny mono metadata label, and a subtle hover border shift.
-- Navigation: Create a `72px` transparent dark nav with compact muted links, pill CTAs, and hover states that brighten text without changing layout.
-- Button or badge: Create a `32px` high pill with `9999px` radius, `13px` text, dark graphite fill, hairline border, and `0.1s` hover transition.
+| 层级 | 尺寸 | 使用场景 |
+| --- | --- | --- |
+| H1 | `clamp(30px, 3.4vw, 48px)` | 页面主标题。 |
+| H2 | `20px` 左右 | 面板标题，如“1. 上传产品截图”。 |
+| 产品名称 | `20px` | 产品卡片内名称编辑区域。 |
+| 正文 | `14px-15px` | 描述、报告正文。 |
+| 标签/元信息 | `12px-13px` | 角色标签、状态、表格说明。 |
 
-### Ready-to-Use Prompt
+### 排版约束
 
-Use the Linear landing page design language: dark-first `#08090A` canvas, Inter Variable typography, tight display tracking, cool gray text hierarchy, compact pill controls, hairline graphite borders, minimal shadows, and sparse periwinkle `#828FFF` accents. Structure the page as a serious product-system interface with workflow modules and real UI screenshots rather than decorative marketing sections.
+- 全局 `letter-spacing` 保持 `0`，不要使用负字距。
+- 标题和正文应有明确层级，不要让面板内标题过大。
+- 按钮文字必须保持白色或青色，不允许低对比灰色主按钮。
+- 表格表头和单元格文字必须居中或按当前表格规范统一对齐，避免局部漂移。
 
-### Iteration Guide
+## 4. 组件规范
 
-1. First remove visual noise: gradients, blobs, heavy shadows, oversized cards, and unnecessary copy.
-2. Then tune hierarchy: primary white for only the most important text, muted gray for most explanations.
-3. Finally refine interaction polish: faster transitions, clearer borders, compact pill actions, and consistent `8px` rhythm.
+### 页面骨架
 
-## Optional Appendix: Interaction Patterns
+- `.app-shell`：桌面端使用左侧栏 + 右侧工作区两栏布局。
+- `.sidebar`：桌面端固定在左侧并 sticky，移动端变为顶部横向导航。
+- `.workspace`：承载顶部标题、配置入口、流程卡、产品上传、UX 纬度、报告输出。
 
-- Scroll: content reveals long product narrative sections rather than many small cards.
-- Hover: links and buttons brighten quickly; borders may become stronger.
-- Click: pill actions and feature links imply forward navigation, often with arrow copy.
-- Motion: crisp and subtle. Observed tokens include `0.1s`, `0.15s`, and `0.25s` transitions with quint/circ/quart easing curves.
-- Content voice: concise, confident, technical, and product-led. Headlines frame the product as an operating system rather than a simple tool.
+### 侧边栏
+
+- 宽度约 `232px`。
+- 背景为深灰到近黑渐变。
+- Logo 使用青色实底，文字为白色。
+- 导航项 hover/active 使用青色文字、青色边框和弱青色背景。
+- 导航内容固定为：上传截图、UX 纬度分析、输出报告。
+
+### 顶部模型配置入口
+
+- 使用 `.status-panel.config-strip`。
+- 固定在工作区顶部附近，随页面滚动保持可见。
+- 左侧展示状态点和标题，右侧保留“点击配置 / 更改配置”按钮。
+- 可用态使用青色点；受限态使用警告点。
+- 不要在 PDF/打印样式中展示模型配置入口。
+
+### 面板和卡片
+
+- 主要面板 `.panel`、报告 `.report-shell`、产品 `.product-card` 使用 `20px` 圆角。
+- 背景为 `#262626`，边框为 `rgba(255,255,255,0.14)`。
+- hover 时只轻微增强青色边框，不要让卡片产生大幅位移或强烈发光。
+- 卡片内不再嵌套装饰性大卡片，避免“卡片套卡片”的臃肿层级。
+
+### 产品上传卡片
+
+- 每个产品最多 9 张图片。
+- 上传入口和已上传图片保持同一比例与尺寸逻辑。
+- PC 端图片区域最多单行 3 个，其余视口自适应。
+- 上传入口使用主题青色，文字上方带上传图标。
+- 图片序号弱化显示，不应喧宾夺主。
+- “移除”按钮需要弱化，不鼓励误触，但必须可识别可点击。
+- 产品链接区域底部对齐，产品名称、标签、上传区顶部对齐。
+
+### 产品名称编辑
+
+- 默认展示 `请输入产品名称` 占位。
+- hover 或 focus 后进入输入态。
+- 展示文字、输入框、编辑图标必须共用同一固定高度和栅格，不允许点击后跳动。
+- 编辑图标始终垂直居中，不被长产品名挤压。
+
+### 图片预览弹层
+
+- 预览使用暗色大弹层，图片居中展示。
+- 关闭按钮固定在右上角，按钮尺寸约 `38px-40px`。
+- 关闭图标使用 CSS 伪元素绘制，不能依赖文本 `×` 的字体基线居中。
+- 点击图片本体不应关闭弹层；关闭动作应通过关闭按钮或外层策略统一处理。
+- 图片文件名在底部居中，过长时省略。
+
+### UX 纬度模块
+
+- 标题为“2. UX 纬度分析”。
+- 只保留维度勾选和“生成对比报告”按钮。
+- 维度项使用 `.check-tile`，选中状态沿用浏览器 checkbox + 青色 accent。
+- 按钮应位于维度下方，作为报告生成动作，不要与模型配置或上传动作混淆。
+
+### 表格
+
+- 表格容器允许横向滚动，避免移动端压缩到不可读。
+- 表头使用统一背景和统一边框。
+- 首列居中对齐。
+- 每列之间需要竖线分割。
+- 表头标题和单元格内容要保持同列居中，不允许表头偏左、内容偏右。
+- 横向对比矩阵不展示分数，只展示结论内容。
+
+### 报告区
+
+- 报告结构应保持：排名、矩阵、整体最优结论、雷达图、交互细节、产品优劣势、行动建议。
+- 雷达图使用青色作为主要识别色。
+- 优劣势模块使用清晰分组结构，优势偏青色强调，劣势保持白色/灰色层级。
+- 导出按钮默认不展示，生成报告后才展示。
+
+### 按钮
+
+- 主按钮：青色背景 `#00BCBC`，白色文字，圆角 `12px`。
+- 主按钮 hover：`#20DADA`。
+- 次级按钮：深色背景或弱青色背景，青色文字或白色文字。
+- 禁用态：降低透明度，保留布局尺寸，不隐藏按钮。
+- 所有按钮高度和文字应稳定，不因 hover/focus 改变尺寸。
+
+## 5. 交互规范
+
+### 通用反馈
+
+- hover：边框变青、背景轻微提亮。
+- focus：使用青色边框和 `0 0 0 3px rgba(0,188,188,0.16)` 聚焦环。
+- disabled：透明度降低，鼠标为不可用。
+- loading：按钮文案变化，避免重复提交。
+
+### 上传与预览
+
+- 点击上传入口选择图片。
+- 上传后缩略图向右排列，超出后折行。
+- 点击缩略图打开预览。
+- 点击预览关闭按钮关闭，不应出现关闭图标偏移。
+
+### 模型配置
+
+- 未配置模型时，配置入口提示报告生成受限。
+- 点击配置入口打开弹层。
+- 弹层右上角必须有居中的关闭按钮。
+- 保存配置后关闭弹层，并更新配置入口文案。
+- 测试连接应尽量提前暴露模型不可用、视觉能力不可用、超时等问题。
+
+### 报告生成
+
+- 未配置模型时，生成按钮禁用。
+- 生成中展示进度提示。
+- 失败时显示可读错误，不让页面崩溃。
+- 成功后展示报告，并显示导出按钮。
+
+## 6. 响应式规则
+
+### 桌面端
+
+- `>1080px`：左侧栏 + 右侧工作区。
+- 左侧栏 sticky，高度 `100vh`。
+- 产品列表可多列展示。
+- 上传图片区 PC 端最多单行 3 个。
+- 表格保持列宽，使用横向滚动承载宽内容。
+
+### 中等屏幕
+
+- `<=1080px`：布局变为单列。
+- 侧边栏变成顶部横向区域。
+- 导航横向滚动，避免换行挤压。
+- 产品卡片、报告卡片、分析卡片统一单列。
+
+### 移动端
+
+- `<=760px`：页面边距压缩，工作区 padding 使用 `14px 10px 20px`。
+- H1 降为约 `26px`。
+- 面板圆角降为 `16px`，padding 降为 `16px`。
+- 配置入口改为纵向结构，按钮满宽。
+- 输入框与按钮在窄屏下改为单列。
+- 上传图片区使用 `repeat(auto-fit, minmax(104px, 1fr))`。
+- 表格和画像/报告矩阵必须允许横向滚动，不强行压缩文字。
+- 图片预览弹层必须适配小屏，关闭按钮保持在可点击区域内。
+
+### 打印/PDF
+
+- 打印时隐藏侧边栏、配置入口、输入面板、进度面板。
+- PDF 保持暗色报告风格。
+- 报告卡片和表格避免跨页断裂。
+- 不要在 PDF 中展示“更改模型/API”相关功能。
+
+## 7. 不应该破坏的设计约束
+
+- 不要把首页改成营销页，首屏必须是可用工作台。
+- 不要改变主色 `#00BCBC`。
+- 不要让主按钮或 Logo 文字变成非白色。
+- 不要移除暗色 B 端工作台风格。
+- 不要让侧边导航和模型配置入口失去 sticky/吸顶行为。
+- 不要让上传入口、图片缩略图、产品链接区域发生上下错位。
+- 不要让产品名称输入框 hover/focus 时跳动。
+- 不要让预览弹层关闭图标依赖字体基线居中。
+- 不要让表格首列、表头、单元格出现不同对齐规则。
+- 不要在无报告时展示导出按钮。
+- 不要恢复“功能画像生成 / 一键生成画像”的旧独立模块。
+- 不要在横向对比矩阵里展示分数。
+- 不要把图片上限改回 4 张；当前上限为 9 张。
+- 不要用大面积紫色、绿色、米色、橙棕色替换当前青色暗色体系。
+- 不要通过大阴影、渐变光球、装饰图形制造层级；层级应来自卡片、边框、间距和内容结构。
