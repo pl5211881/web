@@ -108,6 +108,7 @@ const state = {
 const app = document.querySelector("#app");
 const activeModelControllers = new Set();
 let activeScrollRoot = null;
+let workspaceScrollTop = 0;
 
 render();
 loadHealth();
@@ -144,6 +145,8 @@ async function loadHealth() {
 
 function render() {
   const activeSection = state.activeSection || sectionFromHash();
+  const previousScrollRoot = app.querySelector(".workspace");
+  if (previousScrollRoot) workspaceScrollTop = previousScrollRoot.scrollTop;
   const modelConfigured = Boolean(state.health?.modelConfigured || isLocalModelConfigured());
   const modelTitle = state.health?.apiAvailable
     ? modelConfigured
@@ -287,6 +290,7 @@ function render() {
   bindWorkspaceScroll();
   bindPanelHoverSpot();
   syncAddProductCardHeight();
+  if (previousScrollRoot) restoreWorkspaceScroll(workspaceScrollTop);
 }
 
 function renderProduct(product) {
@@ -1029,7 +1033,9 @@ function bindEvents() {
   });
 
   app.querySelectorAll("[data-candidate-id]").forEach((field) => {
-    field.addEventListener("change", (event) => toggleCandidateSelection(event.target.dataset.candidateId, event.target.checked));
+    field.addEventListener("change", (event) => preserveScrollAfter(event.currentTarget, () => {
+      toggleCandidateSelection(event.target.dataset.candidateId, event.target.checked);
+    }));
   });
 
   app.querySelectorAll("[data-modal-panel]").forEach((panel) => {
@@ -1041,22 +1047,26 @@ function bindEvents() {
   });
 
   app.querySelectorAll("[data-upload]").forEach((field) => {
-    field.addEventListener("change", (event) => handleImages(event.target.dataset.upload, event.target.files));
+    field.addEventListener("change", (event) => preserveScrollAfter(event.currentTarget, () => (
+      handleImages(event.target.dataset.upload, event.target.files)
+    )));
   });
 
   app.querySelectorAll("[data-dimension]").forEach((field) => {
-    field.addEventListener("change", (event) => {
+    field.addEventListener("change", (event) => preserveScrollAfter(event.currentTarget, () => {
       const dimension = event.target.dataset.dimension;
       state.error = "";
       state.dimensions = event.target.checked
         ? [...new Set([...state.dimensions, dimension])]
         : state.dimensions.filter((item) => item !== dimension);
       render();
-    });
+    }));
   });
 
   app.querySelectorAll("[data-action]").forEach((button) => {
-    button.addEventListener("click", () => handleAction(button.dataset.action, button.dataset.id, button.dataset.imageId));
+    button.addEventListener("click", () => preserveScrollAfter(button, () => (
+      handleAction(button.dataset.action, button.dataset.id, button.dataset.imageId)
+    )));
   });
 
   app.querySelectorAll(".nav-list a[href^='#']").forEach((link) => {
@@ -1083,16 +1093,16 @@ function navigateToSection(section) {
   if (!NAV_SECTIONS.includes(section)) return;
   state.activeSection = section;
   updateActiveNav();
-  const nextHash = `#${section}`;
-  if (window.location.hash !== nextHash) window.history.pushState(null, "", nextHash);
-  requestAnimationFrame(() => {
-    scrollSectionIntoView(section);
-  });
+  if (window.location.hash) {
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+  }
+  scrollSectionIntoView(section);
 }
 
 function normalizeInitialHashPosition() {
   if (!window.location.hash) return;
   requestAnimationFrame(() => {
+    workspaceScrollTop = 0;
     getScrollRoot().scrollTo({ top: 0, left: 0, behavior: "auto" });
   });
 }
@@ -1111,6 +1121,7 @@ function updateActiveNav() {
 function syncActiveSectionFromScroll() {
   let current = sectionFromHash();
   const scrollRoot = getScrollRoot();
+  workspaceScrollTop = scrollRoot === window ? window.scrollY : scrollRoot.scrollTop;
   const rootTop = scrollRoot === window ? 0 : scrollRoot.getBoundingClientRect().top;
   const anchorOffset = rootTop + 140;
   for (const section of NAV_SECTIONS) {
@@ -1137,6 +1148,38 @@ function bindWorkspaceScroll() {
   }
 }
 
+function currentWorkspaceScrollTop() {
+  const scrollRoot = getScrollRoot();
+  return scrollRoot === window ? window.scrollY : scrollRoot.scrollTop;
+}
+
+function preserveScrollAfter(anchor, task) {
+  workspaceScrollTop = currentWorkspaceScrollTop();
+  const result = task();
+  Promise.resolve(result).finally(() => restoreWorkspaceScroll(workspaceScrollTop));
+  return result;
+}
+
+function restoreWorkspaceScroll(scrollTop) {
+  const applyScroll = () => {
+    const scrollRoot = getScrollRoot();
+    if (scrollRoot === window) {
+      window.scrollTo({ top: scrollTop, left: 0, behavior: "auto" });
+      return;
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    scrollRoot.scrollTop = scrollTop;
+    scrollRoot.scrollLeft = 0;
+  };
+
+  requestAnimationFrame(() => {
+    applyScroll();
+    requestAnimationFrame(applyScroll);
+  });
+  applyScroll();
+  window.setTimeout(applyScroll, 80);
+}
+
 function scrollSectionIntoView(section) {
   const node = document.getElementById(section);
   if (!node) return;
@@ -1148,8 +1191,14 @@ function scrollSectionIntoView(section) {
 
   const rootRect = scrollRoot.getBoundingClientRect();
   const nodeRect = node.getBoundingClientRect();
-  const top = scrollRoot.scrollTop + nodeRect.top - rootRect.top;
-  scrollRoot.scrollTo({ top, left: 0, behavior: "smooth" });
+  const nextTop = scrollRoot.scrollTop + nodeRect.top - rootRect.top;
+  const applyScroll = () => {
+    scrollRoot.scrollTo({ top: nextTop, left: 0, behavior: "auto" });
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    workspaceScrollTop = scrollRoot.scrollTop;
+  };
+  applyScroll();
+  requestAnimationFrame(applyScroll);
 }
 
 function syncAddProductCardHeight() {

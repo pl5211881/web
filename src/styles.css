@@ -4837,8 +4837,8 @@ body .name-edit:focus-within .edit-icon {
   stroke: rgba(255, 255, 255, 0.68);
 }
 
-/* Final desktop viewport scroll lock. */
-@media (min-width: 761px) {
+/* Final viewport scroll lock. */
+@media screen {
   html,
   body,
   #app {
@@ -4867,10 +4867,22 @@ body .name-edit:focus-within .edit-icon {
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
+    overflow-anchor: none;
     overscroll-behavior: contain;
     scroll-behavior: smooth;
     scrollbar-gutter: stable;
     -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media screen and (max-width: 1080px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .sidebar {
+    height: auto;
   }
 }
 
