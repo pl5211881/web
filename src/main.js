@@ -107,6 +107,7 @@ const state = {
 
 const app = document.querySelector("#app");
 const activeModelControllers = new Set();
+let activeScrollRoot = null;
 
 render();
 loadHealth();
@@ -283,6 +284,7 @@ function render() {
   `;
 
   bindEvents();
+  bindWorkspaceScroll();
   bindPanelHoverSpot();
   syncAddProductCardHeight();
 }
@@ -1074,24 +1076,24 @@ function sectionFromHash() {
 function setActiveSection(section) {
   if (!NAV_SECTIONS.includes(section) || state.activeSection === section) return;
   state.activeSection = section;
-  render();
+  updateActiveNav();
 }
 
 function navigateToSection(section) {
   if (!NAV_SECTIONS.includes(section)) return;
   state.activeSection = section;
-  render();
+  updateActiveNav();
   const nextHash = `#${section}`;
   if (window.location.hash !== nextHash) window.history.pushState(null, "", nextHash);
   requestAnimationFrame(() => {
-    document.getElementById(section)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollSectionIntoView(section);
   });
 }
 
 function normalizeInitialHashPosition() {
   if (!window.location.hash) return;
   requestAnimationFrame(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    getScrollRoot().scrollTo({ top: 0, left: 0, behavior: "auto" });
   });
 }
 
@@ -1099,15 +1101,55 @@ function syncActiveSectionFromHash() {
   setActiveSection(sectionFromHash());
 }
 
+function updateActiveNav() {
+  app.querySelectorAll(".nav-list a[href^='#']").forEach((link) => {
+    const section = link.getAttribute("href")?.slice(1);
+    link.classList.toggle("active", section === state.activeSection);
+  });
+}
+
 function syncActiveSectionFromScroll() {
   let current = sectionFromHash();
-  const anchorOffset = 140;
+  const scrollRoot = getScrollRoot();
+  const rootTop = scrollRoot === window ? 0 : scrollRoot.getBoundingClientRect().top;
+  const anchorOffset = rootTop + 140;
   for (const section of NAV_SECTIONS) {
     const node = document.getElementById(section);
     if (!node) continue;
     if (node.getBoundingClientRect().top <= anchorOffset) current = section;
   }
   setActiveSection(current);
+}
+
+function getScrollRoot() {
+  return app.querySelector(".workspace") || window;
+}
+
+function bindWorkspaceScroll() {
+  const nextScrollRoot = getScrollRoot();
+  if (activeScrollRoot === nextScrollRoot) return;
+  if (activeScrollRoot && activeScrollRoot !== window) {
+    activeScrollRoot.removeEventListener("scroll", syncActiveSectionFromScroll);
+  }
+  activeScrollRoot = nextScrollRoot;
+  if (activeScrollRoot !== window) {
+    activeScrollRoot.addEventListener("scroll", syncActiveSectionFromScroll, { passive: true });
+  }
+}
+
+function scrollSectionIntoView(section) {
+  const node = document.getElementById(section);
+  if (!node) return;
+  const scrollRoot = getScrollRoot();
+  if (scrollRoot === window) {
+    node.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
+  const rootRect = scrollRoot.getBoundingClientRect();
+  const nodeRect = node.getBoundingClientRect();
+  const top = scrollRoot.scrollTop + nodeRect.top - rootRect.top;
+  scrollRoot.scrollTo({ top, left: 0, behavior: "smooth" });
 }
 
 function syncAddProductCardHeight() {

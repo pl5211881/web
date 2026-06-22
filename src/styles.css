@@ -4837,6 +4837,43 @@ body .name-edit:focus-within .edit-icon {
   stroke: rgba(255, 255, 255, 0.68);
 }
 
+/* Final desktop viewport scroll lock. */
+@media (min-width: 761px) {
+  html,
+  body,
+  #app {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    overscroll-behavior: none;
+  }
+
+  .app-shell {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sidebar {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .workspace {
+    height: 100%;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+    scrollbar-gutter: stable;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 /* Final config-strip inline centering lock. */
 @media (min-width: 761px) {
   body .config-strip > div {
