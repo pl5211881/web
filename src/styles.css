@@ -4837,6 +4837,31 @@ body .name-edit:focus-within .edit-icon {
   stroke: rgba(255, 255, 255, 0.68);
 }
 
+/* Final config-strip inline centering lock. */
+@media (min-width: 761px) {
+  body .config-strip > div {
+    align-items: center;
+    flex-direction: row;
+    gap: var(--space-5);
+  }
+
+  body .config-strip strong,
+  body .config-strip > div > span {
+    line-height: 1.2;
+  }
+
+  body .config-strip > div > span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 20px;
+    transform: translateY(-1.5px);
+  }
+
+  body .config-strip .config-status-icon {
+    transform: translateY(-1.5px);
+  }
+}
+
 /* Final mobile width containment lock. */
 @media (max-width: 760px) {
   html,
