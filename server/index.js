@@ -52,6 +52,21 @@ const ProductSchema = z.object({
   images: z.array(ImageSchema).max(MAX_PRODUCT_IMAGES).optional().default([])
 });
 
+const DiscoverInputSchema = z.object({
+  selfName: z.string().max(80).optional().default(""),
+  selfUrl: z.string().url().optional().or(z.literal("")).default(""),
+  industryKeywords: z.union([
+    z.string().max(500),
+    z.array(z.string().max(80)).max(12)
+  ]).optional().default(""),
+  market: z.string().trim().min(2).max(2).optional().default("cn"),
+  sourceText: z.string().max(20000).optional().default(""),
+  sourceUrls: z.array(z.string().url()).max(5).optional().default([]),
+  limit: z.number().int().min(3).max(10).optional().default(10)
+}).refine((input) => (
+  Boolean(input.selfName?.trim())
+), "请提供本品名称。");
+
 const AnalyzeInputSchema = z.object({
   products: z.array(ProductSchema).min(2).max(4).refine(
     (products) => products.filter((product) => product.role === "self").length === 1,
@@ -264,6 +279,75 @@ app.post("/api/extract", async (req, res) => {
     screenshotWarning: screenshot.ok ? "" : screenshot.warning
   };
   res.status(extraction.ok || screenshot.ok ? 200 : 422).json(result);
+});
+
+app.post("/api/discover-competitors", async (req, res) => {
+  const parsed = DiscoverInputSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "竞品发现参数校验失败", details: parsed.error.flatten() });
+
+  const input = parsed.data;
+  const modelConfig = getModelConfig(req);
+  const keywords = normalizeKeywords(input.industryKeywords);
+  const warnings = [];
+  const sources = [];
+
+  const sourceExtractions = await Promise.all(input.sourceUrls.map(async (url) => {
+    const extraction = await extractPageText(url);
+    sources.push({
+      type: "web",
+      label: safeHostname(url) || url,
+      url,
+      ok: extraction.ok,
+      warning: extraction.warning || ""
+    });
+    if (!extraction.ok) warnings.push(`${url} 抓取失败：${extraction.warning || "未知原因"}`);
+    return { url, ...extraction };
+  }));
+
+  let appStoreCandidates = [];
+  try {
+    const appStoreContext = await buildAppStoreContext(input, keywords);
+    appStoreCandidates = appStoreContext.candidates;
+    sources.push(...appStoreContext.sources);
+    warnings.push(...appStoreContext.warnings);
+  } catch (error) {
+    warnings.push(`App Store 检索失败：${error.message}`);
+  }
+
+  let candidates = normalizeCompetitorCandidates(appStoreCandidates, input, keywords).slice(0, input.limit);
+  let aiWarning = "";
+  let modelUsed = false;
+  if (modelConfig.apiKey && modelConfig.model && (appStoreCandidates.length || input.sourceText.trim() || sourceExtractions.some((item) => item.text))) {
+    try {
+      const aiJson = await callModelJson(modelConfig, [
+        { role: "system", content: "你是资深产品策略和 UX 研究专家。只输出合法 JSON，不输出 Markdown。" },
+        { role: "user", content: buildCompetitorDiscoveryPrompt(input, keywords, appStoreCandidates, sourceExtractions, candidates, modelConfig.model) }
+      ]);
+      const aiCandidates = Array.isArray(aiJson?.candidates) ? aiJson.candidates : [];
+      if (aiCandidates.length) {
+        modelUsed = true;
+        candidates = normalizeCompetitorCandidates(aiCandidates, input, keywords)
+          .sort((a, b) => b.confidence - a.confidence)
+          .slice(0, input.limit);
+      }
+    } catch (error) {
+      aiWarning = `AI 归类排序失败，已降级展示公开检索结果：${error.message}`;
+      warnings.push(aiWarning);
+    }
+  } else if (!modelConfig.apiKey || !modelConfig.model) {
+    warnings.push("未配置模型，已展示公开检索候选；配置模型后可获得更准确的去重、排序和推荐理由。");
+  }
+
+  res.json({
+    candidates,
+    sources,
+    warnings: [...new Set(warnings.filter(Boolean))],
+    meta: {
+      generatedAt: new Date().toISOString(),
+      modelUsed,
+      market: input.market.toLowerCase()
+    }
+  });
 });
 
 app.post("/api/profile", async (req, res) => {
@@ -501,6 +585,247 @@ function getModelConfig(req) {
     model: headerModel || OPENAI_MODEL,
     fromHeaders
   };
+}
+
+function normalizeKeywords(value) {
+  const items = Array.isArray(value) ? value : String(value || "").split(/[,，、\n]/);
+  return [...new Set(items.map((item) => String(item || "").trim()).filter(Boolean))].slice(0, 12);
+}
+
+async function buildAppStoreContext(input, keywords) {
+  const warnings = [];
+  const sources = [];
+  const terms = [
+    input.selfName,
+    ...keywords,
+    safeHostname(input.selfUrl || "")
+  ].map((item) => cleanSearchTerm(item)).filter(Boolean);
+  const uniqueTerms = [...new Set(terms)].slice(0, 5);
+
+  if (!uniqueTerms.length) return { candidates: [], sources, warnings };
+
+  const results = [];
+  for (const term of uniqueTerms) {
+    try {
+      const apps = await searchAppStore(term, input.market, input.limit);
+      results.push(...apps.map((app) => ({ ...app, searchTerm: term })));
+      sources.push({
+        type: "app-store",
+        label: `App Store: ${term}`,
+        url: `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=software&country=${encodeURIComponent(input.market)}`,
+        ok: true,
+        count: apps.length
+      });
+    } catch (error) {
+      warnings.push(`App Store「${term}」检索失败：${error.message}`);
+      sources.push({
+        type: "app-store",
+        label: `App Store: ${term}`,
+        ok: false,
+        warning: error.message
+      });
+    }
+  }
+
+  return { candidates: results, sources, warnings };
+}
+
+async function searchAppStore(term, market = "cn", limit = 10) {
+  const url = new URL("https://itunes.apple.com/search");
+  url.searchParams.set("term", term);
+  url.searchParams.set("entity", "software");
+  url.searchParams.set("country", market.toLowerCase());
+  url.searchParams.set("limit", String(limit));
+  url.searchParams.set("lang", market.toLowerCase() === "cn" ? "zh_cn" : "en_us");
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+  let response;
+  try {
+    response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0 UXCompetitiveAnalysisBot/1.0",
+        "Accept": "application/json"
+      }
+    });
+  } catch (error) {
+    if (error.name === "AbortError") throw new Error("App Store 检索超时");
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const data = await response.json();
+  return (data.results || []).map((item) => ({
+    name: item.trackName || item.trackCensoredName || "",
+    url: item.trackViewUrl || "",
+    platform: "App Store",
+    category: item.primaryGenreName || "",
+    developer: item.sellerName || item.artistName || "",
+    iconUrl: item.artworkUrl100 || item.artworkUrl60 || "",
+    source: "App Store",
+    reason: item.description ? stripText(item.description).slice(0, 120) : "来自 App Store 公开检索结果。",
+    matchedKeywords: []
+  })).filter((item) => item.name && item.url);
+}
+
+function normalizeCompetitorCandidates(candidates, input, keywords) {
+  const selfName = normalizeComparableName(input.selfName);
+  const selfUrl = normalizeComparableUrl(input.selfUrl);
+  const seen = new Set();
+  const normalized = [];
+
+  for (const candidate of candidates) {
+    const name = String(candidate?.name || candidate?.productName || "").trim().slice(0, 80);
+    const url = String(candidate?.url || candidate?.appStoreUrl || candidate?.officialUrl || "").trim();
+    if (!name) continue;
+    if (selfName && normalizeComparableName(name) === selfName) continue;
+    if (selfUrl && url && normalizeComparableUrl(url) === selfUrl) continue;
+
+    const key = `${normalizeComparableName(name)}|${normalizeComparableUrl(url)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const sourceText = `${name} ${candidate?.category || ""} ${candidate?.developer || ""} ${candidate?.reason || ""}`.toLowerCase();
+    const matchedKeywords = [
+      ...(Array.isArray(candidate?.matchedKeywords) ? candidate.matchedKeywords : []),
+      ...keywords.filter((keyword) => sourceText.includes(keyword.toLowerCase())),
+      ...(candidate?.searchTerm && sourceText.includes(String(candidate.searchTerm).toLowerCase()) ? [candidate.searchTerm] : [])
+    ].map((item) => String(item || "").trim()).filter(Boolean);
+
+    const confidence = clampConfidence(candidate?.confidence ?? candidate?.score ?? scoreCandidateRelevance(candidate, matchedKeywords, keywords));
+    normalized.push({
+      name,
+      url,
+      platform: String(candidate?.platform || "网页/App").trim().slice(0, 40),
+      category: String(candidate?.category || "").trim().slice(0, 80),
+      developer: String(candidate?.developer || candidate?.company || "").trim().slice(0, 100),
+      iconUrl: String(candidate?.iconUrl || "").trim(),
+      source: String(candidate?.source || "公开资料").trim().slice(0, 60),
+      reason: String(candidate?.reason || "根据名称、类别、关键词和公开资料判断为潜在同行业竞品。").trim().slice(0, 220),
+      confidence,
+      matchedKeywords: [...new Set(matchedKeywords)].slice(0, 6)
+    });
+  }
+
+  return normalized.sort((a, b) => b.confidence - a.confidence);
+}
+
+function scoreCandidateRelevance(candidate, matchedKeywords, keywords) {
+  const category = String(candidate?.category || "").toLowerCase();
+  const text = `${candidate?.name || ""} ${candidate?.developer || ""} ${candidate?.reason || ""}`.toLowerCase();
+  const healthIntent = keywords.some((keyword) => /医|药|健康|问诊|医保|病|care|health|medical|doctor|medicine/i.test(keyword));
+  let score = 45;
+
+  score += Math.min(30, matchedKeywords.length * 12);
+  if (healthIntent && /medical|health|medicine|医疗|健康|医药/.test(category)) score += 22;
+  if (healthIntent && /sport|game|music|photo|travel|finance|sports/.test(category)) score -= 24;
+  if (keywords.some((keyword) => text.includes(keyword.toLowerCase()))) score += 10;
+  if (candidate?.source === "AI提取" || candidate?.source === "行业资料") score += 8;
+
+  return score;
+}
+
+function buildCompetitorDiscoveryPrompt(input, keywords, appStoreCandidates, sourceExtractions, fallbackCandidates, modelName) {
+  const appStoreBlock = appStoreCandidates.slice(0, 30).map((item, index) => [
+    `${index + 1}. ${item.name}`,
+    `平台：${item.platform || "App Store"}`,
+    `分类：${item.category || "未知"}`,
+    `开发商：${item.developer || "未知"}`,
+    `链接：${item.url || "无"}`,
+    `关键词：${(item.matchedKeywords || []).join("、") || "无"}`,
+    `简介：${item.reason || "无"}`
+  ].join("\n")).join("\n\n");
+
+  const sourceBlock = sourceExtractions.map((item, index) => [
+    `资料 ${index + 1}：${item.url}`,
+    `抓取状态：${item.ok ? "成功" : `失败：${item.warning || "未知原因"}`}`,
+    `正文：${(item.text || "").slice(0, 4000) || "无"}`
+  ].join("\n")).join("\n\n");
+
+  const fallbackBlock = fallbackCandidates.map((item, index) => `${index + 1}. ${item.name}｜${item.category || "未知分类"}｜${item.developer || "未知开发商"}｜${item.url || "无链接"}`).join("\n");
+
+  return `
+请根据本品信息、App Store 公开检索结果、用户提供的行业资料，推荐同行业竞品。你需要去重、剔除明显无关项，并按相关性排序。
+
+本品名称：${input.selfName || "未提供"}
+本品链接：${input.selfUrl || "未提供"}
+目标市场：${input.market}
+行业关键词：${keywords.join("、") || "未提供"}
+模型：${modelName}
+
+用户粘贴行业资料：
+${input.sourceText || "无"}
+
+用户资料链接抓取：
+${sourceBlock || "无"}
+
+App Store 候选：
+${appStoreBlock || "无"}
+
+规则候选：
+${fallbackBlock || "无"}
+
+必须只返回 JSON：
+{
+  "candidates": [
+    {
+      "name": "产品名",
+      "url": "官网或 App Store 链接",
+      "platform": "App Store / Web / 其他",
+      "category": "行业或分类",
+      "developer": "开发商或公司",
+      "iconUrl": "图标 URL，可为空",
+      "source": "App Store / 行业资料 / AI提取",
+      "reason": "为什么是同行业竞品，最多 80 字",
+      "confidence": 0,
+      "matchedKeywords": ["关键词"]
+    }
+  ]
+}
+
+要求：
+1. 最多返回 ${input.limit} 个。
+2. confidence 为 0-100，越相关越高。
+3. 不要返回本品自身。
+4. 若资料不足，可以保留公开检索中最相关项，但 reason 要说明不确定性。
+5. 不输出 Markdown，不包代码块。
+`.trim();
+}
+
+function cleanSearchTerm(value = "") {
+  return stripText(String(value || ""))
+    .replace(/^www\./, "")
+    .replace(/\.(com|cn|net|org|io|app)$/i, "")
+    .slice(0, 60)
+    .trim();
+}
+
+function stripText(value = "") {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function normalizeComparableName(value = "") {
+  return String(value || "").toLowerCase().replace(/\s+/g, "").replace(/[^\p{L}\p{N}]/gu, "");
+}
+
+function normalizeComparableUrl(value = "") {
+  try {
+    const url = new URL(value);
+    url.hash = "";
+    url.search = "";
+    return url.toString().replace(/\/$/, "").toLowerCase();
+  } catch {
+    return String(value || "").trim().replace(/\/$/, "").toLowerCase();
+  }
+}
+
+function clampConfidence(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 58;
+  return Math.max(0, Math.min(100, Math.round(number)));
 }
 
 async function extractPageText(url) {

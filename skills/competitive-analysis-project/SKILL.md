@@ -37,8 +37,9 @@ Production:
 - Keep the app as a dark B-side analysis workspace, not a marketing page.
 - Keep the primary color `#00BCBC`.
 - Keep primary button and logo text white.
-- Preserve the current structure: upload screenshots, UX dimension analysis, output report.
+- Preserve the current structure: competitor discovery, upload screenshots, UX dimension analysis, output report.
 - Do not restore the old standalone profile generation module.
+- Keep competitor discovery before screenshot upload unless the user explicitly asks to remove it.
 - Keep image limit at 9 per product.
 - Keep export buttons hidden until a report exists.
 - Keep report matrix content-only; do not show scores in the horizontal comparison matrix.
