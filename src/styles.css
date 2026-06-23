@@ -2377,6 +2377,17 @@ ul {
   margin-bottom: 8px;
 }
 
+.source-link {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.source-link:hover {
+  color: var(--primary);
+}
+
 .exported {
   padding: 28px;
 }
@@ -5889,6 +5900,10 @@ thead th,
 
 .section-title-row {
   padding-bottom: var(--space-4);
+}
+
+.section-title-row span {
+  color: #c3c4c8;
 }
 
 .section-title-row.simple {

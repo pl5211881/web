@@ -687,11 +687,20 @@ function renderReport(report) {
       <div class="report-section sources">
         <h3>资料来源</h3>
         ${report.meta.sources.map((source) => `
-          <p><strong>${escapeHtml(source.productName)}</strong>：${source.extracted ? "链接正文" : "未抓取成功"}${source.imageCount ? ` + ${source.imageCount} 张图片` : ""}${source.warning ? ` · ${escapeHtml(source.warning)}` : ""}</p>
+          <p><strong>${escapeHtml(source.productName)}</strong>：${renderSourceStatus(source)}${source.imageCount ? ` + ${source.imageCount} 张图片` : ""}${source.warning ? ` · ${escapeHtml(source.warning)}` : ""}</p>
         `).join("")}
       </div>
     </section>
   `;
+}
+
+function renderSourceStatus(source) {
+  const product = findProductByName(source.productName);
+  const productUrl = product?.url?.trim();
+  const status = source.extracted ? "链接正文" : "未抓取成功";
+  if (!isHttpUrl(productUrl)) return status;
+
+  return `<a class="source-link" href="${escapeAttr(productUrl)}" target="_blank" rel="noreferrer">${status}</a>`;
 }
 
 function renderRadarConclusion(report) {
