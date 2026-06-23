@@ -7,3 +7,4 @@ outputs/
 !.env.example
 npm-debug.log*
 .vercel
+.DS_Store
