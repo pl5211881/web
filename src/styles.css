@@ -285,6 +285,10 @@ button:disabled {
     linear-gradient(180deg, rgba(9, 11, 15, 0.76), rgba(7, 9, 13, 0.92));
 }
 
+.workspace.has-export-dock {
+  padding-bottom: 136px;
+}
+
 .section-anchor {
   display: block;
   width: 0;
@@ -345,6 +349,54 @@ p {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.export-dock {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: fit-content;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: translateX(-50%);
+}
+
+.export-dock .ghost-btn,
+.export-dock .primary-btn {
+  min-width: 224px;
+  min-height: 76px;
+  padding: 0 32px;
+  border-radius: 26px;
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.export-dock .ghost-btn {
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.export-dock .primary-btn {
+  border: 2px solid var(--primary);
+  background: var(--primary);
+  color: var(--on-primary, #081007);
+  box-shadow: 0 18px 42px rgba(183, 255, 90, 0.24);
+}
+
+.export-dock .ghost-btn:hover,
+.export-dock .primary-btn:hover {
+  transform: translateY(-1px);
 }
 
 .primary-btn,
@@ -4837,6 +4889,114 @@ body .name-edit:focus-within .edit-icon {
   stroke: rgba(255, 255, 255, 0.68);
 }
 
+/* Final fixed report export dock. */
+.workspace.has-export-dock {
+  --export-dock-height: 74px;
+  padding-bottom: var(--export-dock-height);
+}
+
+.export-dock {
+  position: fixed;
+  left: auto;
+  right: var(--space-6);
+  bottom: 16px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  width: fit-content;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.export-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 29;
+  box-sizing: border-box;
+  height: var(--export-dock-height, 146px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgb(31, 31, 31);
+}
+
+.export-dock .ghost-btn,
+.export-dock .primary-btn {
+  min-width: 112px;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.export-dock .ghost-btn {
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.export-dock .ghost-btn:hover,
+.export-dock .ghost-btn:focus,
+.export-dock .ghost-btn:focus-visible,
+.export-dock .ghost-btn:active {
+  background: transparent;
+}
+
+.export-dock .primary-btn {
+  border: 2px solid var(--primary);
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: 0 18px 42px rgba(183, 255, 90, 0.24);
+}
+
+.export-dock .ghost-btn:hover,
+.export-dock .primary-btn:hover {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 760px) {
+  .workspace.has-export-dock {
+    --export-dock-height: 74px;
+    padding-bottom: var(--export-dock-height);
+  }
+
+  .export-dock {
+    left: auto;
+    right: var(--space-4);
+    bottom: 16px;
+    width: auto;
+    max-width: calc(100vw - var(--space-6));
+    gap: var(--space-3);
+    transform: none;
+  }
+
+  .export-mask {
+    left: 0;
+    height: var(--export-dock-height, 146px);
+    background: rgb(31, 31, 31);
+  }
+
+  .export-dock .ghost-btn,
+  .export-dock .primary-btn {
+    width: auto;
+    min-width: 0;
+    min-height: 42px;
+    padding: 0 var(--space-4);
+    border-radius: 10px;
+    font-size: 15px;
+  }
+}
+
 /* Final viewport scroll lock. */
 @media screen {
   html,
@@ -5521,6 +5681,14 @@ body .config-strip .config-status-icon svg {
 }
 
 /* Final recommendation priority palette. */
+.recommendation-list article {
+  align-items: center;
+}
+
+.recommendation-list .priority {
+  align-self: center;
+}
+
 .priority.低 {
   background: var(--primary);
   color: var(--on-primary);
@@ -5659,6 +5827,7 @@ body .config-strip .config-status-icon svg {
 .capture-meta,
 .source-row,
 .top-actions,
+.export-dock,
 .matrix-toolbar,
 .radar-legend,
 .analysis-card-head div,
@@ -5889,4 +6058,15 @@ body .name-edit .edit-icon {
 body .name-edit:hover .edit-icon,
 body .name-edit:focus-within .edit-icon {
   stroke: rgba(255, 255, 255, 0.68);
+}
+
+/* Final model config sticky alignment lock. */
+body .config-strip {
+  top: 0;
+}
+
+@media (max-width: 760px) {
+  body .config-strip {
+    top: var(--space-3);
+  }
 }

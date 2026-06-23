@@ -109,6 +109,7 @@ const app = document.querySelector("#app");
 const activeModelControllers = new Set();
 let activeScrollRoot = null;
 let workspaceScrollTop = 0;
+let pendingScrollRestore = null;
 
 render();
 loadHealth();
@@ -146,7 +147,7 @@ async function loadHealth() {
 function render() {
   const activeSection = state.activeSection || sectionFromHash();
   const previousScrollRoot = app.querySelector(".workspace");
-  if (previousScrollRoot) workspaceScrollTop = previousScrollRoot.scrollTop;
+  if (previousScrollRoot && !pendingScrollRestore) workspaceScrollTop = previousScrollRoot.scrollTop;
   const modelConfigured = Boolean(state.health?.modelConfigured || isLocalModelConfigured());
   const modelTitle = state.health?.apiAvailable
     ? modelConfigured
@@ -161,37 +162,14 @@ function render() {
       : "报告生成受限"
     : "请启动后端服务";
 
-  app.innerHTML = `
-    <div class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-mark">UX</div>
-          <div>
-            <strong>竞品分析</strong>
-            <span>Research Console</span>
-          </div>
-        </div>
-        <nav class="nav-list" aria-label="工作台导航">
-          <a class="${activeSection === "discover" ? "active" : ""}" href="#discover">竞品发现</a>
-          <a class="${activeSection === "products" ? "active" : ""}" href="#products">上传截图</a>
-          <a class="${activeSection === "profiles" ? "active" : ""}" href="#profiles">UX 纬度分析</a>
-          <a class="${activeSection === "report" ? "active" : ""}" href="#report">输出报告</a>
-        </nav>
-      </aside>
-
-      <main class="workspace" id="workspace">
+  const workspaceClass = `workspace ${state.report ? "has-export-dock" : ""}`;
+  const workspaceHtml = `
         <span class="section-anchor" id="discover" aria-hidden="true"></span>
         <header class="topbar">
           <div>
             <p class="eyebrow">UX Competitive Intelligence</p>
             <h1>UX 竞品深度分析</h1>
           </div>
-          ${state.report ? `
-            <div class="top-actions" id="export">
-              <button class="ghost-btn" data-action="export-html">导出 HTML</button>
-              <button class="primary-btn" data-action="print">导出为 PDF</button>
-            </div>
-          ` : ""}
         </header>
 
         ${state.health && !state.health.apiAvailable ? `
@@ -280,17 +258,57 @@ function render() {
 
         ${state.loading ? renderProgress("正在生成报告", "正在综合产品链接、截图线索与 UX 维度。") : ""}
         ${state.report ? renderReport(state.report) : renderEmptyReport()}
+        ${state.report ? `
+          <div class="export-mask" aria-hidden="true"></div>
+          <div class="export-dock" id="export" aria-label="导出报告">
+            <button class="ghost-btn" data-action="export-html">导出 HTML</button>
+            <button class="primary-btn" data-action="print">导出为 PDF</button>
+          </div>
+        ` : ""}
+  `;
+
+  if (previousScrollRoot) {
+    previousScrollRoot.className = workspaceClass;
+    previousScrollRoot.innerHTML = workspaceHtml;
+    app.querySelectorAll(".modal-backdrop,.image-preview-dialog").forEach((node) => node.remove());
+    app.querySelector(".app-shell")?.insertAdjacentHTML("beforeend", `
+      ${state.showConfigModal ? renderConfigModal() : ""}
+      ${state.previewImage ? renderImagePreview() : ""}
+    `);
+  } else {
+    app.innerHTML = `
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">UX</div>
+          <div>
+            <strong>竞品分析</strong>
+            <span>Research Console</span>
+          </div>
+        </div>
+        <nav class="nav-list" aria-label="工作台导航">
+          <a class="${activeSection === "discover" ? "active" : ""}" href="#discover">竞品发现</a>
+          <a class="${activeSection === "products" ? "active" : ""}" href="#products">上传截图</a>
+          <a class="${activeSection === "profiles" ? "active" : ""}" href="#profiles">UX 纬度分析</a>
+          <a class="${activeSection === "report" ? "active" : ""}" href="#report">输出报告</a>
+        </nav>
+      </aside>
+
+      <main class="${workspaceClass}" id="workspace">
+        ${workspaceHtml}
       </main>
       ${state.showConfigModal ? renderConfigModal() : ""}
       ${state.previewImage ? renderImagePreview() : ""}
     </div>
   `;
+  }
 
   bindEvents();
   bindWorkspaceScroll();
   bindPanelHoverSpot();
   syncAddProductCardHeight();
-  if (previousScrollRoot) restoreWorkspaceScroll(workspaceScrollTop);
+  restoreWorkspaceScroll(pendingScrollRestore || workspaceScrollTop);
+  pendingScrollRestore = null;
 }
 
 function renderProduct(product) {
@@ -1064,6 +1082,11 @@ function bindEvents() {
   });
 
   app.querySelectorAll("[data-action]").forEach((button) => {
+    const rememberScroll = (event) => {
+      if (event.isTrusted) button._scrollContext = captureScrollContext();
+    };
+    button.addEventListener("pointerdown", rememberScroll);
+    button.addEventListener("mousedown", rememberScroll);
     button.addEventListener("click", () => preserveScrollAfter(button, () => (
       handleAction(button.dataset.action, button.dataset.id, button.dataset.imageId)
     )));
@@ -1154,13 +1177,24 @@ function currentWorkspaceScrollTop() {
 }
 
 function preserveScrollAfter(anchor, task) {
-  workspaceScrollTop = currentWorkspaceScrollTop();
+  const scrollContext = anchor?._scrollContext || captureScrollContext();
+  if (anchor) anchor._scrollContext = null;
+  workspaceScrollTop = scrollContext.top;
+  pendingScrollRestore = scrollContext;
   const result = task();
-  Promise.resolve(result).finally(() => restoreWorkspaceScroll(workspaceScrollTop));
+  Promise.resolve(result).finally(() => restoreWorkspaceScroll(scrollContext));
   return result;
 }
 
-function restoreWorkspaceScroll(scrollTop) {
+function captureScrollContext() {
+  return {
+    top: currentWorkspaceScrollTop()
+  };
+}
+
+function restoreWorkspaceScroll(context) {
+  const restoreContext = typeof context === "number" ? { top: context } : context;
+  const scrollTop = restoreContext?.top || 0;
   const applyScroll = () => {
     const scrollRoot = getScrollRoot();
     if (scrollRoot === window) {
@@ -1177,7 +1211,8 @@ function restoreWorkspaceScroll(scrollTop) {
     requestAnimationFrame(applyScroll);
   });
   applyScroll();
-  window.setTimeout(applyScroll, 80);
+  window.setTimeout(applyScroll, 0);
+  window.setTimeout(applyScroll, 16);
 }
 
 function scrollSectionIntoView(section) {
@@ -1747,10 +1782,12 @@ async function generateProfileForProduct(id, options = {}) {
 }
 
 async function analyze() {
+  const scrollContext = captureScrollContext();
   const validationError = validateForm();
   if (validationError) {
     state.error = validationError;
     render();
+    restoreWorkspaceScroll(scrollContext);
     return;
   }
 
@@ -1758,7 +1795,9 @@ async function analyze() {
   state.error = "";
   state.report = null;
   const requestEpoch = state.modelRequestEpoch;
+  pendingScrollRestore = scrollContext;
   render();
+  restoreWorkspaceScroll(scrollContext);
 
   try {
     const response = await fetchWithTimeout("/api/analyze", {
@@ -1771,7 +1810,9 @@ async function analyze() {
     }, 90000);
     if (requestEpoch !== state.modelRequestEpoch) {
       state.loading = false;
+      pendingScrollRestore = scrollContext;
       render();
+      restoreWorkspaceScroll(scrollContext);
       return;
     }
     const data = await response.json();
@@ -1783,7 +1824,9 @@ async function analyze() {
   }
 
   state.loading = false;
+  pendingScrollRestore = scrollContext;
   render();
+  restoreWorkspaceScroll(scrollContext);
 }
 
 function validateForm() {
